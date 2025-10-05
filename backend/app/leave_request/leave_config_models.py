@@ -8,7 +8,7 @@ class PolicyBase(SQLModel):
     code: str = Field(unique=True, index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
     value: str = Field(max_length=255)
-    description: str | None = Field(defaut=None, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
 
 class Policy(PolicyBase, table=True):
@@ -19,7 +19,7 @@ class Policy(PolicyBase, table=True):
 class PublicHolidayBase(SQLModel):
     date: str = Field(unique=True, index=True)
     name: str = Field(default="Untitled", max_length=255)
-    description: str | None = Field(defaut=None, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
 
 class PublicHoliday(PublicHolidayBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -29,7 +29,7 @@ class PublicHoliday(PublicHolidayBase, table=True):
 class LeaveTypeBase(SQLModel):
     code: str = Field(unique=True, index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
-    description: str | None = Field(defaut=None, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
 
 class LeaveType(LeaveTypeBase, table=True):
