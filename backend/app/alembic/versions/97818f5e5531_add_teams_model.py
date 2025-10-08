@@ -1,8 +1,8 @@
 """add teams model
 
-Revision ID: 3e921f96513e
+Revision ID: 97818f5e5531
 Revises: 9ce6e1057327
-Create Date: 2025-10-08 21:29:03.428077
+Create Date: 2025-10-08 22:46:40.704434
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = '3e921f96513e'
+revision = '97818f5e5531'
 down_revision = '9ce6e1057327'
 branch_labels = None
 depends_on = None
@@ -22,12 +22,12 @@ def upgrade():
     op.create_table('team',
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=True),
+    sa.Column('team_owner_id', sa.Uuid(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('team_owner_id', sa.Uuid(), nullable=True),
     sa.Column('owner_id', sa.Uuid(), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['team_owner_id'], ['user.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['team_owner_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
