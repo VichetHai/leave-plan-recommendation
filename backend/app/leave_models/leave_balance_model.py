@@ -2,6 +2,8 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
+from app.models import User
+
 
 # Leave Balance
 # Shared properties

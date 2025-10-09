@@ -2,6 +2,8 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
+from ..models import User
+
 
 # Team
 # Shared properties

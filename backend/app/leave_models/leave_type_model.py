@@ -2,6 +2,9 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
+from .leave_request_model import LeaveRequest
+from ..models import User
+
 
 # Leave Type
 # Shared properties

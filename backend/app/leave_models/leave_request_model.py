@@ -4,7 +4,8 @@ from typing import Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from backend.app.models import LeaveType, User, Team
+from .team_model import Team
+from ..models import User
 
 
 # Shared properties
@@ -52,7 +53,7 @@ class LeaveRequest(LeaveRequestBase, table=True):
     owner: User | None = Relationship(back_populates="leave_requests")
     approver: User | None = Relationship(back_populates="approved_leave_requests")
     team: Team | None = Relationship(back_populates="leave_requests")
-    leave_type: LeaveType | None = Relationship(back_populates="leave_requests")
+    leave_type: "LeaveType" = Relationship(back_populates="leave_requests")
 
 
 # Public (for API responses)

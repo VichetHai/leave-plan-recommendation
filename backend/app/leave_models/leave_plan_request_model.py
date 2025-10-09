@@ -4,7 +4,8 @@ from typing import Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from ..leave_models import LeaveType, User
+from .leave_type_model import LeaveType
+from ..models import User
 
 
 # Shared
@@ -45,7 +46,7 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     owner: User | None = Relationship(back_populates="leave_plan_requests")
     approver: User | None = Relationship(back_populates="approved_leave_plan_requests")
     leave_type: LeaveType | None = Relationship(back_populates="leave_plan_requests")
-    details: list["LeavePlanDetail"] = Relationship(back_populates="leave_plan_request")
+    details: list["LeavePlanDetail"] = Relationship(back_populates="leave_plan_request_details")
 
 
 # Public
@@ -60,4 +61,38 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
 
 class LeavePlanRequestsPublic(SQLModel):
     data: list[LeavePlanRequestPublic]
+    count: int
+
+
+# plan detail
+class LeavePlanDetailBase(SQLModel):
+    leave_date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class LeavePlanDetailCreate(LeavePlanDetailBase):
+    leave_plan_id: uuid.UUID
+
+
+class LeavePlanDetailUpdate(LeavePlanDetailBase):
+    pass
+
+
+class LeavePlanDetail(LeavePlanDetailBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    leave_plan_id: uuid.UUID = Field(
+        foreign_key="leaveplanrequest.id", nullable=False, ondelete="CASCADE"
+    )
+
+    leave_plan_request: "LeavePlanRequest" | None = Relationship(
+        back_populates="leave_plan_request_details"
+    )
+
+
+class LeavePlanDetailPublic(LeavePlanDetailBase):
+    id: uuid.UUID
+    leave_plan_id: uuid.UUID
+
+
+class LeavePlanDetailsPublic(SQLModel):
+    data: list[LeavePlanDetailPublic]
     count: int
