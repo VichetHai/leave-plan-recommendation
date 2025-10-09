@@ -134,208 +134,211 @@ class NewPassword(SQLModel):
 
 
 # ###### Custom Models ######
-# Policy
-# Shared properties
-class PolicyBase(SQLModel):
-    code: str = Field(unique=True, index=True, max_length=255)
-    name: str = Field(default="Untitled", max_length=255)
-    value: str = Field(max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-    is_active: bool = True
-
-
-# Properties to receive on item creation
-class PolicyCreate(PolicyBase):
-    pass
-
-
-# Properties to receive on item update
-class PolicyUpdate(PolicyBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class Policy(PolicyBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="policies")
-
-
-# Properties to return via API, id is always required
-class PolicyPublic(PolicyBase):
-    id: uuid.UUID
-
-
-class PoliciesPublic(SQLModel):
-    data: list[PolicyPublic]
-    count: int
-
-
-# Public Holiday
-# Shared properties
-class PublicHolidayBase(SQLModel):
-    date: str = Field(unique=True, index=True)
-    name: str = Field(default="Untitled", max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-
-
-# Properties to receive on item creation
-class PublicHolidayCreate(PublicHolidayBase):
-    pass
-
-
-# Properties to receive on item update
-class PublicHolidayUpdate(PublicHolidayBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class PublicHoliday(PublicHolidayBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="public_holidays")
-
-
-# Properties to return via API, id is always required
-class PublicHolidayPublic(PublicHolidayBase):
-    id: uuid.UUID
-
-
-class PublicHolidaysPublic(SQLModel):
-    data: list[PublicHolidayPublic]
-    count: int
-
-
-# Leave Type
-# Shared properties
-class LeaveTypeBase(SQLModel):
-    code: str = Field(unique=True, index=True, max_length=255)
-    name: str = Field(default="Untitled", max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-    is_active: bool = True
-
-
-# Properties to receive on item creation
-class LeaveTypeCreate(LeaveTypeBase):
-    pass
-
-
-# Properties to receive on item update
-class LeaveTypeUpdate(LeaveTypeBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class LeaveType(LeaveTypeBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="leave_types")
-
-
-# Properties to return via API, id is always required
-class LeaveTypePublic(LeaveTypeBase):
-    id: uuid.UUID
-
-
-class LeaveTypesPublic(SQLModel):
-    data: list[LeaveTypePublic]
-    count: int
-
-
-# Team
-# Shared properties
-class TeamBase(SQLModel):
-    name: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-    team_owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    is_active: bool = True
-
-
-# Properties to receive on item creation
-class TeamCreate(TeamBase):
-    pass
-
-
-# Properties to receive on item update
-class TeamUpdate(TeamBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class Team(TeamBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-
-    team_owner: User | None = Relationship(
-        back_populates="team_owners",
-        sa_relationship_kwargs={"foreign_keys": "Team.team_owner_id"},
-    )
-    owner: User | None = Relationship(
-        back_populates="teams",
-        sa_relationship_kwargs={"foreign_keys": "[Team.owner_id]"},
-    )
-
-
-# Properties to return via API, id is always required
-class TeamPublic(TeamBase):
-    id: uuid.UUID
-    team_owner_id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class TeamsPublic(SQLModel):
-    data: list[TeamPublic]
-    count: int
-
-
-# Leave Balance
-# Shared properties
-class LeaveBalanceBase(SQLModel):
-    year: str = Field(max_length=4)
-    balance: float = Field(default=18)
-    leave_type_id: uuid.UUID = Field(
-        foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
-    )
-
-
-# Properties to receive on item creation
-class LeaveBalanceCreate(LeaveBalanceBase):
-    pass
-
-
-# Properties to receive on item update
-class LeaveBalanceUpdate(LeaveBalanceBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class LeaveBalance(LeaveBalanceBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="leave_balances")
-
-
-# Properties to return via API, id is always required
-class LeaveBalancePublic(LeaveBalanceBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class LeaveBalancesPublic(SQLModel):
-    data: list[LeaveBalancePublic]
-    count: int
-
-
+# # Policy
+# # Shared properties
+# class PolicyBase(SQLModel):
+#     code: str = Field(unique=True, index=True, max_length=255)
+#     name: str = Field(default="Untitled", max_length=255)
+#     value: str = Field(max_length=255)
+#     description: str | None = Field(default=None, max_length=255)
+#     is_active: bool = True
+#
+#
+# # Properties to receive on item creation
+# class PolicyCreate(PolicyBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class PolicyUpdate(PolicyBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class Policy(PolicyBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     owner: User | None = Relationship(back_populates="policies")
+#
+#
+# # Properties to return via API, id is always required
+# class PolicyPublic(PolicyBase):
+#     id: uuid.UUID
+#
+#
+# class PoliciesPublic(SQLModel):
+#     data: list[PolicyPublic]
+#     count: int
+#
+#
+# # Public Holiday
+# # Shared properties
+# class PublicHolidayBase(SQLModel):
+#     date: str = Field(unique=True, index=True)
+#     name: str = Field(default="Untitled", max_length=255)
+#     description: str | None = Field(default=None, max_length=255)
+#
+#
+# # Properties to receive on item creation
+# class PublicHolidayCreate(PublicHolidayBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class PublicHolidayUpdate(PublicHolidayBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class PublicHoliday(PublicHolidayBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     owner: User | None = Relationship(back_populates="public_holidays")
+#
+#
+# # Properties to return via API, id is always required
+# class PublicHolidayPublic(PublicHolidayBase):
+#     id: uuid.UUID
+#
+#
+# class PublicHolidaysPublic(SQLModel):
+#     data: list[PublicHolidayPublic]
+#     count: int
+#
+#
+# # Leave Type
+# # Shared properties
+# class LeaveTypeBase(SQLModel):
+#     code: str = Field(unique=True, index=True, max_length=255)
+#     name: str = Field(default="Untitled", max_length=255)
+#     description: str | None = Field(default=None, max_length=255)
+#     is_active: bool = True
+#
+#
+# # Properties to receive on item creation
+# class LeaveTypeCreate(LeaveTypeBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class LeaveTypeUpdate(LeaveTypeBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class LeaveType(LeaveTypeBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     owner: User | None = Relationship(back_populates="leave_types")
+#     leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
+#     leave_plan_requests: list["LeavePlanRequest"] = Relationship(
+#         back_populates="leave_type"
+#     )
+#
+#
+# # Properties to return via API, id is always required
+# class LeaveTypePublic(LeaveTypeBase):
+#     id: uuid.UUID
+#
+#
+# class LeaveTypesPublic(SQLModel):
+#     data: list[LeaveTypePublic]
+#     count: int
+#
+#
+# # Team
+# # Shared properties
+# class TeamBase(SQLModel):
+#     name: str = Field(min_length=1, max_length=255)
+#     description: str | None = Field(default=None, max_length=255)
+#     team_owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     is_active: bool = True
+#
+#
+# # Properties to receive on item creation
+# class TeamCreate(TeamBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class TeamUpdate(TeamBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class Team(TeamBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#
+#     team_owner: User | None = Relationship(
+#         back_populates="team_owners",
+#         sa_relationship_kwargs={"foreign_keys": "Team.team_owner_id"},
+#     )
+#     owner: User | None = Relationship(
+#         back_populates="teams",
+#         sa_relationship_kwargs={"foreign_keys": "[Team.owner_id]"},
+#     )
+#     leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
+#
+#
+# # Properties to return via API, id is always required
+# class TeamPublic(TeamBase):
+#     id: uuid.UUID
+#     team_owner_id: uuid.UUID
+#     owner_id: uuid.UUID
+#
+#
+# class TeamsPublic(SQLModel):
+#     data: list[TeamPublic]
+#     count: int
+#
+#
+# # Leave Balance
+# # Shared properties
+# class LeaveBalanceBase(SQLModel):
+#     year: str = Field(max_length=4)
+#     balance: float = Field(default=18)
+#     leave_type_id: uuid.UUID = Field(
+#         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
+#     )
+#
+#
+# # Properties to receive on item creation
+# class LeaveBalanceCreate(LeaveBalanceBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class LeaveBalanceUpdate(LeaveBalanceBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class LeaveBalance(LeaveBalanceBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     owner: User | None = Relationship(back_populates="leave_balances")
+#
+#
+# # Properties to return via API, id is always required
+# class LeaveBalancePublic(LeaveBalanceBase):
+#     id: uuid.UUID
+#     owner_id: uuid.UUID
+#
+#
+# class LeaveBalancesPublic(SQLModel):
+#     data: list[LeaveBalancePublic]
+#     count: int
 # ###### End - Custom Models ######
