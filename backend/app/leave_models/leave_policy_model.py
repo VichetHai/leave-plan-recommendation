@@ -6,11 +6,10 @@ from sqlmodel import SQLModel, Field, Relationship
 # Policy
 # Shared properties
 class PolicyBase(SQLModel):
-    code: str = Field(unique=True, index=True, max_length=255)
+    code: str = Field(index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
     value: str = Field(max_length=255)
     description: str | None = Field(default=None, max_length=255)
-    is_eactive: bool = True
     is_active: bool = True
 
 
@@ -30,7 +29,7 @@ class Policy(PolicyBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: "User | None" = Relationship(back_populates="policies")
+    owner: "User" = Relationship(back_populates="policies")
 
 
 # Properties to return via API, id is always required

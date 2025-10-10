@@ -5,14 +5,21 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import LeaveType, LeaveTypeCreate, LeaveTypePublic, LeaveTypesPublic, LeaveTypeUpdate, Message
+from app.leave_models.leave_type_model import (
+    LeaveType,
+    LeaveTypeCreate,
+    LeaveTypePublic,
+    LeaveTypesPublic,
+    LeaveTypeUpdate,
+)
+from app.models import Message
 
 router = APIRouter(prefix="/leave-types", tags=["leave-types"])
 
 
 @router.get("/", response_model=LeaveTypesPublic)
 def list(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100 # type: ignore
+    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100  # type: ignore
 ) -> Any:
     """
     Retrieve Items.
@@ -44,7 +51,7 @@ def list(
 
 
 @router.get("/{id}", response_model=LeaveTypePublic)
-def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any: # type: ignore
+def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:  # type: ignore
     """
     Get item by ID.
     """
@@ -62,7 +69,7 @@ def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> A
 
 @router.post("/", response_model=LeaveTypePublic)
 def create(
-    *, session: SessionDep, current_user: CurrentUser, row_in: LeaveTypeCreate # type: ignore
+    *, session: SessionDep, current_user: CurrentUser, row_in: LeaveTypeCreate  # type: ignore
 ) -> Any:
     """
     Create new item.
@@ -80,7 +87,7 @@ def create(
 @router.put("/{id}", response_model=LeaveTypePublic)
 def update(
     *,
-    session: SessionDep, # type: ignore
+    session: SessionDep,  # type: ignore
     current_user: CurrentUser,
     id: uuid.UUID,
     row_in: LeaveTypeUpdate,
@@ -107,7 +114,7 @@ def update(
 
 @router.delete("/{id}")
 def delete(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID # type: ignore
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID  # type: ignore
 ) -> Message:
     """
     Delete an item.

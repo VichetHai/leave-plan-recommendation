@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Relationship
 # Leave Type
 # Shared properties
 class LeaveTypeBase(SQLModel):
-    code: str = Field(unique=True, index=True, max_length=255)
+    code: str = Field(index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
     description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
@@ -29,7 +29,7 @@ class LeaveType(LeaveTypeBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
 
-    owner: "User | None" = Relationship(back_populates="leave_types")
+    owner: "User" = Relationship(back_populates="leave_types")
     # leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
     # leave_plan_requests: list["LeavePlanRequest"] = Relationship(
     #     back_populates="leave_type"

@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Relationship
 # Public Holiday
 # Shared properties
 class PublicHolidayBase(SQLModel):
-    date: str = Field(unique=True, index=True)
+    date: str = Field(index=True)
     name: str = Field(default="Untitled", max_length=255)
     description: str | None = Field(default=None, max_length=255)
 
@@ -27,7 +27,7 @@ class PublicHoliday(PublicHolidayBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: "User | None" = Relationship(back_populates="public_holidays")
+    owner: "User" = Relationship(back_populates="public_holidays")
 
 
 # Properties to return via API, id is always required
