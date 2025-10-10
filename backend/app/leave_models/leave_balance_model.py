@@ -2,8 +2,6 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from app.models import User
-
 
 # Leave Balance
 # Shared properties
@@ -31,7 +29,7 @@ class LeaveBalance(LeaveBalanceBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="leave_balances")
+    owner: "User" = Relationship(back_populates="leave_balances")
 
 
 # Properties to return via API, id is always required

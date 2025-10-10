@@ -2,9 +2,6 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from ..models import User
-
-
 # Team
 # Shared properties
 class TeamBase(SQLModel):
@@ -33,11 +30,11 @@ class Team(TeamBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
 
-    team_owner: User | None = Relationship(
+    team_owner: "User" = Relationship(
         back_populates="team_owners",
         sa_relationship_kwargs={"foreign_keys": "Team.team_owner_id"},
     )
-    owner: User | None = Relationship(
+    owner: "User" = Relationship(
         back_populates="teams",
         sa_relationship_kwargs={"foreign_keys": "[Team.owner_id]"},
     )

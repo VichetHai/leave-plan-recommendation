@@ -1,48 +1,48 @@
-import uuid
-
-from sqlmodel import SQLModel, Field, Relationship
-
-from .leave_request_model import LeaveRequest
-from ..models import User
-
-
-# Leave Type
-# Shared properties
-class LeaveTypeBase(SQLModel):
-    code: str = Field(unique=True, index=True, max_length=255)
-    name: str = Field(default="Untitled", max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-    is_active: bool = True
-
-
-# Properties to receive on item creation
-class LeaveTypeCreate(LeaveTypeBase):
-    pass
-
-
-# Properties to receive on item update
-class LeaveTypeUpdate(LeaveTypeBase):
-    pass
-
-
-# Database model, database table inferred from class name
-class LeaveType(LeaveTypeBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="leave_types")
-    leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
-    leave_plan_requests: list["LeavePlanRequest"] = Relationship(
-        back_populates="leave_type"
-    )
-
-
-# Properties to return via API, id is always required
-class LeaveTypePublic(LeaveTypeBase):
-    id: uuid.UUID
-
-
-class LeaveTypesPublic(SQLModel):
-    data: list[LeaveTypePublic]
-    count: int
+# import uuid
+#
+# from sqlmodel import SQLModel, Field, Relationship
+#
+# from .leave_request_model import LeaveRequest
+# from ..models import User
+#
+#
+# # Leave Type
+# # Shared properties
+# class LeaveTypeBase(SQLModel):
+#     code: str = Field(unique=True, index=True, max_length=255)
+#     name: str = Field(default="Untitled", max_length=255)
+#     description: str | None = Field(default=None, max_length=255)
+#     is_active: bool = True
+#
+#
+# # Properties to receive on item creation
+# class LeaveTypeCreate(LeaveTypeBase):
+#     pass
+#
+#
+# # Properties to receive on item update
+# class LeaveTypeUpdate(LeaveTypeBase):
+#     pass
+#
+#
+# # Database model, database table inferred from class name
+# class LeaveType(LeaveTypeBase, table=True):
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     owner_id: uuid.UUID = Field(
+#         foreign_key="user.id", nullable=False, ondelete="CASCADE"
+#     )
+#     owner: User | None = Relationship(back_populates="leave_types")
+#     leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
+#     leave_plan_requests: list["LeavePlanRequest"] = Relationship(
+#         back_populates="leave_type"
+#     )
+#
+#
+# # Properties to return via API, id is always required
+# class LeaveTypePublic(LeaveTypeBase):
+#     id: uuid.UUID
+#
+#
+# class LeaveTypesPublic(SQLModel):
+#     data: list[LeaveTypePublic]
+#     count: int
