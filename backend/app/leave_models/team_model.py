@@ -39,7 +39,8 @@ class Team(TeamBase, table=True):
         back_populates="teams",
         sa_relationship_kwargs={"foreign_keys": "[Team.owner_id]"},
     )
-    # leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
+    leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
+    leave_plan_requests: list["LeavePlanRequest"] = Relationship(back_populates="team")
 
 
 # Properties to return via API, id is always required

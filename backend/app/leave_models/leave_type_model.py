@@ -30,10 +30,10 @@ class LeaveType(LeaveTypeBase, table=True):
     )
 
     owner: "User" = Relationship(back_populates="leave_types")
-    # leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
-    # leave_plan_requests: list["LeavePlanRequest"] = Relationship(
-    #     back_populates="leave_type"
-    # )
+    leave_requests: list["LeaveRequest"] = Relationship(back_populates="leave_type")
+    leave_plan_requests: list["LeavePlanRequest"] = Relationship(
+        back_populates="leave_type"
+    )
 
 
 # Properties to return via API, id is always required

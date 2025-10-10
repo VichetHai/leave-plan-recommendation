@@ -45,18 +45,16 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
 
     # Relationships
     owner: "User" = Relationship(
-        back_populates="leave_requests",
+        back_populates="leave_plan_requests",
         sa_relationship_kwargs={"foreign_keys": "[LeavePlanRequest.owner_id]"},
     )
     approver: "User" = Relationship(
-        back_populates="approved_leave_requests",
+        back_populates="approved_leave_plan_requests",
         sa_relationship_kwargs={"foreign_keys": "[LeavePlanRequest.approver_id]"},
     )
-    team: "Team" = Relationship(back_populates="leave_requests")
+    team: "Team" = Relationship(back_populates="leave_plan_requests")
     leave_type: "LeaveType" = Relationship(back_populates="leave_plan_requests")
-    details: list["LeavePlanDetail"] = Relationship(
-        back_populates="leave_plan_request_details"
-    )
+    details: list["LeavePlanDetail"] = Relationship(back_populates="leave_plan_request")
 
 
 # Public (for API responses)
@@ -98,9 +96,7 @@ class LeavePlanDetail(LeavePlanDetailBase, table=True):
         foreign_key="leaveplanrequest.id", nullable=False, ondelete="CASCADE"
     )
 
-    leave_plan_request: "LeavePlanDetail" = Relationship(
-        back_populates="leave_plan_request_details"
-    )
+    leave_plan_request: "LeavePlanRequest" = Relationship(back_populates="details")
 
 
 # Public (for API responses)

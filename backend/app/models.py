@@ -77,10 +77,22 @@ class User(UserBase, table=True):
     )
     leave_requests: list["LeaveRequest"] = Relationship(
         back_populates="owner",
+        sa_relationship_kwargs={"foreign_keys": "[LeaveRequest.owner_id]"},
+        cascade_delete=True,
+    )
+    approved_leave_requests: list["LeaveRequest"] = Relationship(
+        back_populates="approver",
+        sa_relationship_kwargs={"foreign_keys": "[LeaveRequest.approver_id]"},
         cascade_delete=True,
     )
     leave_plan_requests: list["LeavePlanRequest"] = Relationship(
         back_populates="owner",
+        sa_relationship_kwargs={"foreign_keys": "[LeavePlanRequest.owner_id]"},
+        cascade_delete=True,
+    )
+    approved_leave_plan_requests: list["LeavePlanRequest"] = Relationship(
+        back_populates="approver",
+        sa_relationship_kwargs={"foreign_keys": "[LeavePlanRequest.approver_id]"},
         cascade_delete=True,
     )
 
