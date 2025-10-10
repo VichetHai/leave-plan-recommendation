@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 # Register Models
 from app.leave_models.leave_balance_model import LeaveBalance
 from app.leave_models.leave_policy_model import Policy
+from app.leave_models.leave_request_model import LeaveRequest
 from app.leave_models.leave_type_model import LeaveType
 from app.leave_models.public_holiday_model import PublicHoliday
 from app.leave_models.team_model import Team
@@ -71,6 +72,10 @@ class User(UserBase, table=True):
     team_owners: list["Team"] = Relationship(
         back_populates="team_owner",
         sa_relationship_kwargs={"foreign_keys": "[Team.team_owner_id]"},
+        cascade_delete=True,
+    )
+    leave_requests: list["LeaveRequest"] = Relationship(
+        back_populates="owner",
         cascade_delete=True,
     )
 
