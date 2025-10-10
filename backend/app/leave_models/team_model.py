@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
+
 # Team
 # Shared properties
 class TeamBase(SQLModel):
@@ -30,15 +31,15 @@ class Team(TeamBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
 
-    team_owner: "User" = Relationship(
+    team_owner: "User | None" = Relationship(
         back_populates="team_owners",
         sa_relationship_kwargs={"foreign_keys": "Team.team_owner_id"},
     )
-    owner: "User" = Relationship(
+    owner: "User | None" = Relationship(
         back_populates="teams",
         sa_relationship_kwargs={"foreign_keys": "[Team.owner_id]"},
     )
-    leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
+    # leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
 
 
 # Properties to return via API, id is always required
