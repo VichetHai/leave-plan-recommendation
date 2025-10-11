@@ -12,6 +12,7 @@ const items = [
   { icon: FiFileText, title: "Policy", path: "/policies" },
   { icon: FiCalendar, title: "Public Holiday", path: "/public-holidays" },
   { icon: FiFileText, title: "Leave Types", path: "/leave-types" },
+  { icon: FiUsers, title: "Teams", path: "/teams" },
   { icon: FiActivity, title: "Health Check", path: "/health-check" },
   { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]

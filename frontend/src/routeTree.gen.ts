@@ -15,6 +15,7 @@ import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutTeamsRouteImport } from './routes/_layout/teams'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutPublicHolidaysRouteImport } from './routes/_layout/public-holidays'
 import { Route as LayoutPoliciesRouteImport } from './routes/_layout/policies'
@@ -50,6 +51,11 @@ const LayoutRoute = LayoutRouteImport.update({
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutTeamsRoute = LayoutTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
+  '/teams': typeof LayoutTeamsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
+  '/teams': typeof LayoutTeamsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_layout/policies': typeof LayoutPoliciesRoute
   '/_layout/public-holidays': typeof LayoutPublicHolidaysRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/teams': typeof LayoutTeamsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/public-holidays'
     | '/settings'
+    | '/teams'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/public-holidays'
     | '/settings'
+    | '/teams'
     | '/'
   id:
     | '__root__'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_layout/policies'
     | '/_layout/public-holidays'
     | '/_layout/settings'
+    | '/_layout/teams'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -228,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/teams': {
+      id: '/_layout/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof LayoutTeamsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/settings': {
@@ -290,6 +309,7 @@ interface LayoutRouteChildren {
   LayoutPoliciesRoute: typeof LayoutPoliciesRoute
   LayoutPublicHolidaysRoute: typeof LayoutPublicHolidaysRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutTeamsRoute: typeof LayoutTeamsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
@@ -301,6 +321,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutPoliciesRoute: LayoutPoliciesRoute,
   LayoutPublicHolidaysRoute: LayoutPublicHolidaysRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutTeamsRoute: LayoutTeamsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
