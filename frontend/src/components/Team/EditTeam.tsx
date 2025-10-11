@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
+import { FaExchangeAlt } from "react-icons/fa"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TeamsService, TeamUpdate, TeamPublic } from "@/client/TeamsService"
 import { useUsers } from "@/hooks/useUsers"
@@ -54,6 +55,7 @@ const EditTeam = ({ team }: { team: TeamPublic }) => {
         <DialogRoot size={{ base: "xs", md: "md" }} placement="center" open={isOpen} onOpenChange={({ open }) => setIsOpen(open)}>
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" colorPalette="teal">
+                    <FaExchangeAlt fontSize="16px" />
                     Edit Team
                 </Button>
             </DialogTrigger>
