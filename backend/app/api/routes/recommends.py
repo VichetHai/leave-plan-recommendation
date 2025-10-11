@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Message
+from app.models import LeaveRecommendations
 
 
 class RecommendLeavePlanRouter:
@@ -19,7 +19,7 @@ class RecommendLeavePlanRouter:
             "/leave-plan",
             self.recommend_leave_plan,
             methods=["GET"],
-            response_model=Message,
+            response_model=LeaveRecommendations,
         )
 
     # ---------------------------
@@ -34,13 +34,28 @@ class RecommendLeavePlanRouter:
         data = self.generate_leave_data()
         _, data = self.train_leave_model(data)
         recommendations = self.recommend_leave_days(data, N=18)
-        print("Top recommended leave days for:")
-        print(recommendations[["day_of_year", "is_bridge",  "team_workload",  "preference_score", "predicted_score"]])
-        return Message(message="Leave Recommend Class")
+        response_list = self.format_recommendations_for_response(recommendations)
+        
+        return LeaveRecommendations(data=response_list)
         
     # ---------------------------
     # Helper methods
     # ---------------------------
+    def format_recommendations_for_response(self, recommendations):
+        """
+        Convert a DataFrame of recommended leave days to a list of dicts
+        matching the Pydantic response model.
+        """
+        # Select only relevant columns
+        response_df = recommendations[["date", "is_bridge", "team_workload", "preference_score", "predicted_score"]]
+
+        # Rename columns to match Pydantic model
+        response_df = response_df.rename(columns={"date": "leave_date"})
+
+        # Convert to list of dicts for Pydantic
+        response_list = response_df.to_dict(orient="records")
+        return response_list
+    
     def get_holidays(self, data):
         public_holidays = ["2025-01-01", "2025-01-14", "2025-01-07"]
         holidays = pd.to_datetime(public_holidays)
