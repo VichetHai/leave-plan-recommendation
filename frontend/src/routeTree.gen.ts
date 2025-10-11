@@ -18,6 +18,7 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutPublicHolidaysRouteImport } from './routes/_layout/public-holidays'
 import { Route as LayoutPoliciesRouteImport } from './routes/_layout/policies'
+import { Route as LayoutLeaveTypesRouteImport } from './routes/_layout/leave-types'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHealthCheckRouteImport } from './routes/_layout/health-check'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
@@ -66,6 +67,11 @@ const LayoutPoliciesRoute = LayoutPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutLeaveTypesRoute = LayoutLeaveTypesRouteImport.update({
+  id: '/leave-types',
+  path: '/leave-types',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/health-check': typeof LayoutHealthCheckRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/leave-types': typeof LayoutLeaveTypesRoute
   '/_layout/policies': typeof LayoutPoliciesRoute
   '/_layout/public-holidays': typeof LayoutPublicHolidaysRoute
   '/_layout/settings': typeof LayoutSettingsRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/health-check'
     | '/items'
+    | '/leave-types'
     | '/policies'
     | '/public-holidays'
     | '/settings'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/health-check'
     | '/items'
+    | '/leave-types'
     | '/policies'
     | '/public-holidays'
     | '/settings'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/health-check'
     | '/_layout/items'
+    | '/_layout/leave-types'
     | '/_layout/policies'
     | '/_layout/public-holidays'
     | '/_layout/settings'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutPoliciesRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/leave-types': {
+      id: '/_layout/leave-types'
+      path: '/leave-types'
+      fullPath: '/leave-types'
+      preLoaderRoute: typeof LayoutLeaveTypesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
@@ -267,6 +286,7 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutHealthCheckRoute: typeof LayoutHealthCheckRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutLeaveTypesRoute: typeof LayoutLeaveTypesRoute
   LayoutPoliciesRoute: typeof LayoutPoliciesRoute
   LayoutPublicHolidaysRoute: typeof LayoutPublicHolidaysRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
@@ -277,6 +297,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutHealthCheckRoute: LayoutHealthCheckRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutLeaveTypesRoute: LayoutLeaveTypesRoute,
   LayoutPoliciesRoute: LayoutPoliciesRoute,
   LayoutPublicHolidaysRoute: LayoutPublicHolidaysRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
