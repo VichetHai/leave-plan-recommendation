@@ -2,10 +2,13 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
 from typing import Any
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
+from app.leave_models.public_holiday_model import PublicHoliday
+from sqlmodel import select
+from datetime import datetime
 
 
 class RecommendLeavePlanRouter:
@@ -26,12 +29,17 @@ class RecommendLeavePlanRouter:
     # Endpoint
     # ---------------------------
     def recommend_leave_plan(
-        self, session: SessionDep, current_user: CurrentUser
+        self,
+        session: SessionDep,
+        current_user: CurrentUser,
+        year: int = Query(default=datetime.now().year, description="Year to generate leave recommendations")
     ) -> Any:
         """
         Retrieve items.
         """
-        data = self.generate_leave_data()
+        self.year = year
+
+        data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
         recommendations = self.recommend_leave_days(data, N=18)
         response_list = self.format_recommendations_for_response(recommendations)
@@ -56,8 +64,13 @@ class RecommendLeavePlanRouter:
         response_list = response_df.to_dict(orient="records")
         return response_list
     
-    def get_holidays(self, data):
-        public_holidays = ["2025-01-01", "2025-01-14", "2025-01-07"]
+    def get_holidays(self, data, session):
+        # public_holidays = ["2025-01-01", "2025-01-14", "2025-01-07"]
+        statement = select(PublicHoliday.date).where(PublicHoliday.date.like(f"{self.year}-%"))
+        results = session.exec(statement)
+        public_holidays = results.all()
+        print('public_holidays', public_holidays)
+
         holidays = pd.to_datetime(public_holidays)
         data["is_holiday"] = data["date"].isin(holidays) | data["weekday"].isin([5,6])
         return data
@@ -76,6 +89,7 @@ class RecommendLeavePlanRouter:
         return data
 
     def get_team_workloads(self, data):
+        # TODO:: integrate with database
         team_workload_dict = {
             "2025-01-06": 5,
             "2025-01-02": 3,
@@ -86,8 +100,8 @@ class RecommendLeavePlanRouter:
         return data
 
     def set_recommend_rule(self, data):
-        total_team = 6
-        percentage = 0.5
+        total_team = 6 # TODO:: integrate with database
+        percentage = 0.5 # TODO:: integrate with database
         data["preference_score"] = (
             (data["weekday"].isin([0, 4])).astype(int) * 1 +  # Monday/Friday bonus
             (data["is_bridge"]).astype(int) * 2 +  # bridge day bonus
@@ -95,15 +109,15 @@ class RecommendLeavePlanRouter:
         )
         return data
 
-    def generate_leave_data(self, year=2025):
-        days = pd.date_range(f"{year}-01-01", periods=365)
+    def generate_leave_data(self, session):
+        days = pd.date_range(f"{self.year}-01-01", periods=365)
         data = pd.DataFrame({
             "day_of_year": days.dayofyear,
             "date": days,
             "weekday": days.weekday,
             "team_workload": 0,
         })
-        data = self.get_holidays(data)
+        data = self.get_holidays(data, session)
         data = self.find_bridge_days(data)
         data = self.get_team_workloads(data)
         data = self.set_recommend_rule(data)
