@@ -1,0 +1,242 @@
+import {
+    Button,
+    DialogActionTrigger,
+    DialogRoot,
+    DialogTrigger,
+    Flex,
+    Input,
+    Text,
+    Textarea,
+    VStack,
+} from "@chakra-ui/react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
+import { FaExchangeAlt } from "react-icons/fa"
+import type { ApiError } from "@/client/core/ApiError"
+import { OpenAPI } from "@/client/core/OpenAPI"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
+import { Checkbox } from "../ui/checkbox"
+import {
+    DialogBody,
+    DialogCloseTrigger,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "../ui/dialog"
+import { Field } from "../ui/field"
+
+// These types will be auto-generated once you regenerate the API client
+interface PolicyPublic {
+    code: string
+    name: string
+    value: string  // GET returns 'value' (singular)
+    description: string
+    is_active: boolean
+    id: string
+}
+
+interface PolicyUpdate {
+    code?: string
+    name?: string
+    value?: string  // PUT expects 'value' (singular)
+    description?: string
+    is_active?: boolean
+}
+
+// Temporary service - will be replaced by auto-generated PoliciesService
+const PoliciesService = {
+    updatePolicy: async ({
+        id,
+        requestBody,
+    }: {
+        id: string
+        requestBody: PolicyUpdate
+    }) => {
+        const baseUrl = OpenAPI.BASE || ""
+        const token = localStorage.getItem("access_token") || ""
+        const response = await fetch(`${baseUrl}/api/v1/policies/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(requestBody),
+        })
+        if (!response.ok) {
+            throw new Error("Failed to update policy")
+        }
+        return response.json()
+    },
+}
+
+interface EditPolicyProps {
+    policy: PolicyPublic
+}
+
+const EditPolicy = ({ policy }: EditPolicyProps) => {
+    const [isOpen, setIsOpen] = useState(false)
+    const queryClient = useQueryClient()
+    const { showSuccessToast } = useCustomToast()
+    const {
+        control,
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<PolicyUpdate>({
+        mode: "onChange",
+        criteriaMode: "all",
+        defaultValues: {
+            code: policy.code,
+            name: policy.name,
+            value: policy.value,
+            description: policy.description,
+            is_active: policy.is_active,
+        },
+    })
+
+    const mutation = useMutation({
+        mutationFn: (data: PolicyUpdate) =>
+            PoliciesService.updatePolicy({ id: policy.id, requestBody: data }),
+        onSuccess: () => {
+            showSuccessToast("Policy updated successfully.")
+            reset()
+            setIsOpen(false)
+        },
+        onError: (err: ApiError) => {
+            handleError(err)
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["policies"] })
+        },
+    })
+
+    const onSubmit: SubmitHandler<PolicyUpdate> = async (data) => {
+        mutation.mutate(data)
+    }
+
+    return (
+        <DialogRoot
+            size={{ base: "xs", md: "md" }}
+            placement="center"
+            open={isOpen}
+            onOpenChange={({ open }) => setIsOpen(open)}
+        >
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                    <FaExchangeAlt fontSize="16px" />
+                    Edit Policy
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <DialogHeader>
+                        <DialogTitle>Edit Policy</DialogTitle>
+                    </DialogHeader>
+                    <DialogBody>
+                        <Text mb={4}>Update the policy details below.</Text>
+                        <VStack gap={4}>
+                            <Field
+                                required
+                                invalid={!!errors.code}
+                                errorText={errors.code?.message}
+                                label="Code"
+                            >
+                                <Input
+                                    {...register("code", {
+                                        required: "Code is required",
+                                    })}
+                                    placeholder="Policy code"
+                                    type="text"
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.name}
+                                errorText={errors.name?.message}
+                                label="Name"
+                            >
+                                <Input
+                                    {...register("name", {
+                                        required: "Name is required",
+                                    })}
+                                    placeholder="Policy name"
+                                    type="text"
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.value}
+                                errorText={errors.value?.message}
+                                label="Value"
+                            >
+                                <Input
+                                    {...register("value", {
+                                        required: "Value is required",
+                                    })}
+                                    placeholder="Policy value"
+                                    type="text"
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.description}
+                                errorText={errors.description?.message}
+                                label="Description"
+                            >
+                                <Textarea
+                                    {...register("description", {
+                                        required: "Description is required",
+                                    })}
+                                    placeholder="Policy description"
+                                    rows={4}
+                                />
+                            </Field>
+                        </VStack>
+
+                        <Flex mt={4} direction="column" gap={4}>
+                            <Controller
+                                control={control}
+                                name="is_active"
+                                render={({ field }) => (
+                                    <Field disabled={field.disabled} colorPalette="teal">
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={({ checked }) => field.onChange(checked === true)}
+                                        >
+                                            Is active?
+                                        </Checkbox>
+                                    </Field>
+                                )}
+                            />
+                        </Flex>
+                    </DialogBody>
+
+                    <DialogFooter gap={2}>
+                        <DialogActionTrigger asChild>
+                            <Button
+                                variant="subtle"
+                                colorPalette="gray"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                        </DialogActionTrigger>
+                        <Button variant="solid" type="submit" loading={isSubmitting}>
+                            Save
+                        </Button>
+                    </DialogFooter>
+                    <DialogCloseTrigger />
+                </form>
+            </DialogContent>
+        </DialogRoot>
+    )
+}
+
+export default EditPolicy

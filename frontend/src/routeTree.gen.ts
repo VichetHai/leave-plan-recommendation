@@ -16,7 +16,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutPublicHolidaysRouteImport } from './routes/_layout/public-holidays'
+import { Route as LayoutPoliciesRouteImport } from './routes/_layout/policies'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutHealthCheckRouteImport } from './routes/_layout/health-check'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -53,9 +56,24 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutPublicHolidaysRoute = LayoutPublicHolidaysRouteImport.update({
+  id: '/public-holidays',
+  path: '/public-holidays',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPoliciesRoute = LayoutPoliciesRouteImport.update({
+  id: '/policies',
+  path: '/policies',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutHealthCheckRoute = LayoutHealthCheckRouteImport.update({
+  id: '/health-check',
+  path: '/health-check',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
@@ -70,7 +88,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/policies': typeof LayoutPoliciesRoute
+  '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
 }
@@ -80,7 +101,10 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/policies': typeof LayoutPoliciesRoute
+  '/public-holidays': typeof LayoutPublicHolidaysRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
 }
@@ -92,7 +116,10 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/health-check': typeof LayoutHealthCheckRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/policies': typeof LayoutPoliciesRoute
+  '/_layout/public-holidays': typeof LayoutPublicHolidaysRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
@@ -104,7 +131,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/health-check'
     | '/items'
+    | '/policies'
+    | '/public-holidays'
     | '/settings'
     | '/'
   fileRoutesByTo: FileRoutesByTo
@@ -114,7 +144,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/health-check'
     | '/items'
+    | '/policies'
+    | '/public-holidays'
     | '/settings'
     | '/'
   id:
@@ -125,7 +158,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/health-check'
     | '/_layout/items'
+    | '/_layout/policies'
+    | '/_layout/public-holidays'
     | '/_layout/settings'
     | '/_layout/'
   fileRoutesById: FileRoutesById
@@ -189,11 +225,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/public-holidays': {
+      id: '/_layout/public-holidays'
+      path: '/public-holidays'
+      fullPath: '/public-holidays'
+      preLoaderRoute: typeof LayoutPublicHolidaysRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/policies': {
+      id: '/_layout/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof LayoutPoliciesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
       fullPath: '/items'
       preLoaderRoute: typeof LayoutItemsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/health-check': {
+      id: '/_layout/health-check'
+      path: '/health-check'
+      fullPath: '/health-check'
+      preLoaderRoute: typeof LayoutHealthCheckRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/admin': {
@@ -208,14 +265,20 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutHealthCheckRoute: typeof LayoutHealthCheckRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutPoliciesRoute: typeof LayoutPoliciesRoute
+  LayoutPublicHolidaysRoute: typeof LayoutPublicHolidaysRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutHealthCheckRoute: LayoutHealthCheckRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutPoliciesRoute: LayoutPoliciesRoute,
+  LayoutPublicHolidaysRoute: LayoutPublicHolidaysRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
