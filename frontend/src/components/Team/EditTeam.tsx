@@ -3,20 +3,17 @@ import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TeamsService, TeamUpdate, TeamPublic } from "@/client/TeamsService"
-import { useUsers } from "@/hooks/useUsers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import { Button, Flex, Input, VStack } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Select } from "@/components/ui/select"
 import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const EditTeam = ({ team }: { team: TeamPublic }) => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
-    const { data: users = [], isLoading: isLoadingUsers } = useUsers()
 
     const {
         control,
@@ -38,8 +35,10 @@ const EditTeam = ({ team }: { team: TeamPublic }) => {
         mutationFn: (data: TeamUpdate) => TeamsService.updateTeam({ id: team.id, requestBody: data }),
         onSuccess: () => {
             showSuccessToast("Team updated successfully.")
-            reset()
-            setIsOpen(false)
+            setIsOpen(false) // Close first
+            setTimeout(() => {
+                reset() // Reset after a delay
+            }, 100)
         },
         onError: (err: any) => {
             handleError(err)
@@ -48,11 +47,36 @@ const EditTeam = ({ team }: { team: TeamPublic }) => {
             queryClient.invalidateQueries({ queryKey: ["teams"] })
         },
     })
+
     const onSubmit: SubmitHandler<TeamUpdate> = (data) => {
+        // Prevent multiple submissions
+        if (isSubmitting) return
         mutation.mutate(data)
     }
+
+    // Reset form when dialog opens
+    const handleOpenChange = ({ open }: { open: boolean }) => {
+        if (open && !isOpen) {
+            // Only set to open if it wasn't already open
+            setIsOpen(true)
+            reset({
+                name: team.name,
+                description: team.description,
+                team_owner_id: team.team_owner_id,
+                is_active: team.is_active,
+            })
+        } else if (!open && isOpen) {
+            // Only set to close if it was open
+            setIsOpen(false)
+        }
+    }
     return (
-        <DialogRoot size={{ base: "xs", md: "md" }} placement="center" open={isOpen} onOpenChange={({ open }) => setIsOpen(open)}>
+        <DialogRoot
+            size={{ base: "xs", md: "md" }}
+            placement="center"
+            open={isOpen}
+            onOpenChange={handleOpenChange}
+        >
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" colorPalette="teal">
                     <FaExchangeAlt fontSize="16px" />
@@ -73,22 +97,7 @@ const EditTeam = ({ team }: { team: TeamPublic }) => {
                                 <Input {...register("description", { required: "Description is required" })} placeholder="Enter description" type="text" />
                             </Field>
                             <Field required invalid={!!errors.team_owner_id} errorText={errors.team_owner_id?.message} label="Team Owner">
-                                <Controller
-                                    control={control}
-                                    name="team_owner_id"
-                                    rules={{ required: "Team owner is required" }}
-                                    render={({ field }) => (
-                                        <Select
-                                            {...field}
-                                            placeholder="Select team owner..."
-                                            options={users.map(user => ({
-                                                value: user.id,
-                                                label: user.name
-                                            }))}
-                                            disabled={isLoadingUsers || isSubmitting}
-                                        />
-                                    )}
-                                />
+                                <Input {...register("team_owner_id", { required: "Team owner is required" })} placeholder="Enter team owner ID" type="text" />
                             </Field>
                         </VStack>
                         <Flex mt={4} direction="column" gap={4}>
