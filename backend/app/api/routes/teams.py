@@ -5,19 +5,19 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.leave_models.leave_type_model import (
-    LeaveType,
-    LeaveTypeCreate,
-    LeaveTypePublic,
-    LeaveTypesPublic,
-    LeaveTypeUpdate,
+from app.leave_models.team_model import (
+    Team,
+    TeamCreate,
+    TeamPublic,
+    TeamsPublic,
+    TeamUpdate,
 )
 from app.models import Message
 
-router = APIRouter(prefix="/leave-types", tags=["leave-types"])
+router = APIRouter(prefix="/teams", tags=["teams"])
 
 
-@router.get("/", response_model=LeaveTypesPublic)
+@router.get("/", response_model=TeamsPublic)
 def list(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100  # type: ignore
 ) -> Any:
@@ -28,29 +28,29 @@ def list(
         raise HTTPException(status_code=403, detail="No permissions")
 
     if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(LeaveType)
+        count_statement = select(func.count()).select_from(Team)
         count = session.exec(count_statement).one()
-        statement = select(LeaveType).offset(skip).limit(limit)
+        statement = select(Team).offset(skip).limit(limit)
         rows = session.exec(statement).all()
     else:
         count_statement = (
             select(func.count())
-            .select_from(LeaveType)
-            .where(LeaveType.owner_id == current_user.id)
+            .select_from(Team)
+            .where(Team.owner_id == current_user.id)
         )
         count = session.exec(count_statement).one()
         statement = (
-            select(LeaveType)
-            .where(LeaveType.owner_id == current_user.id)
+            select(Team)
+            .where(Team.owner_id == current_user.id)
             .offset(skip)
             .limit(limit)
         )
         rows = session.exec(statement).all()
 
-    return LeaveTypesPublic(data=rows, count=count)
+    return TeamsPublic(data=rows, count=count)
 
 
-@router.get("/{id}", response_model=LeaveTypePublic)
+@router.get("/{id}", response_model=TeamPublic)
 def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:  # type: ignore
     """
     Get item by ID.
@@ -58,7 +58,7 @@ def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> A
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="No permissions")
 
-    row = session.get(LeaveType, id)
+    row = session.get(Team, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
     if not current_user.is_superuser and (row.owner_id != current_user.id):
@@ -67,9 +67,9 @@ def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> A
     return row
 
 
-@router.post("/", response_model=LeaveTypePublic)
+@router.post("/", response_model=TeamPublic)
 def create(
-    *, session: SessionDep, current_user: CurrentUser, row_in: LeaveTypeCreate  # type: ignore
+    *, session: SessionDep, current_user: CurrentUser, row_in: TeamCreate  # type: ignore
 ) -> Any:
     """
     Create new item.
@@ -77,20 +77,20 @@ def create(
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="No permissions")
 
-    row = LeaveType.model_validate(row_in, update={"owner_id": current_user.id})
+    row = Team.model_validate(row_in, update={"owner_id": current_user.id})
     session.add(row)
     session.commit()
     session.refresh(row)
     return row
 
 
-@router.put("/{id}", response_model=LeaveTypePublic)
+@router.put("/{id}", response_model=TeamPublic)
 def update(
     *,
     session: SessionDep,  # type: ignore
     current_user: CurrentUser,
     id: uuid.UUID,
-    row_in: LeaveTypeUpdate,
+    row_in: TeamUpdate,
 ) -> Any:
     """
     Update an item.
@@ -98,7 +98,7 @@ def update(
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="No permissions")
 
-    row = session.get(LeaveType, id)
+    row = session.get(Team, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
     if not current_user.is_superuser and (row.owner_id != current_user.id):
@@ -122,7 +122,7 @@ def delete(
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="No permissions")
 
-    row = session.get(LeaveType, id)
+    row = session.get(Team, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
     if not current_user.is_superuser and (row.owner_id != current_user.id):

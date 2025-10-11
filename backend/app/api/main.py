@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import items, login, private, users, utils, policies, public_holidays, leave_types
+from app.api.routes import items, login, private, users, utils, policies, public_holidays, leave_types, teams
 from app.core.config import settings
 
 api_router = APIRouter()
@@ -11,6 +11,7 @@ api_router.include_router(items.router)
 api_router.include_router(policies.router)
 api_router.include_router(public_holidays.router)
 api_router.include_router(leave_types.router)
+api_router.include_router(teams.router)
 
 
 if settings.ENVIRONMENT == "local":
