@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
 
@@ -46,12 +46,22 @@ const EditUser = ({ user }: EditUserProps) => {
     handleSubmit,
     reset,
     getValues,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<UserUpdateForm>({
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: user,
   })
+
+  // Watch the password field and auto-fill confirm_password
+  const watchedPassword = watch("password")
+  React.useEffect(() => {
+    if (watchedPassword) {
+      setValue("confirm_password", watchedPassword)
+    }
+  }, [watchedPassword, setValue])
 
   const mutation = useMutation({
     mutationFn: (data: UserUpdateForm) =>

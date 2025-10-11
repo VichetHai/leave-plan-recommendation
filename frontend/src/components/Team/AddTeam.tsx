@@ -1,35 +1,28 @@
 import { useState } from "react"
-import { useEffect } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaPlus } from "react-icons/fa"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TeamsService, TeamCreate } from "@/client/TeamsService"
+import { useUsers } from "@/hooks/useUsers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import { Button, Flex, Input, VStack } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Select } from "@/components/ui/select"
 import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const AddTeam = () => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
-    function generateUUID() {
-        // RFC4122 version 4 compliant UUID generator
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-            const r = (Math.random() * 16) | 0,
-                v = c === "x" ? r : (r & 0x3) | 0x8
-            return v.toString(16)
-        })
-    }
+    const { data: users = [], isLoading: isLoadingUsers } = useUsers()
 
     const {
         control,
         register,
         handleSubmit,
         reset,
-        setValue,
         formState: { errors, isValid, isSubmitting },
     } = useForm<TeamCreate>({
         mode: "onChange",
@@ -37,17 +30,10 @@ const AddTeam = () => {
         defaultValues: {
             name: "",
             description: "",
-            team_owner_id: generateUUID(),
+            team_owner_id: "",
             is_active: true,
         },
     })
-
-    // Regenerate UUID when dialog opens
-    useEffect(() => {
-        if (isOpen) {
-            setValue("team_owner_id", generateUUID())
-        }
-    }, [isOpen, setValue])
     const mutation = useMutation({
         mutationFn: (data: TeamCreate) => TeamsService.createTeam({ requestBody: data }),
         onSuccess: () => {
@@ -86,8 +72,23 @@ const AddTeam = () => {
                             <Field required invalid={!!errors.description} errorText={errors.description?.message} label="Description">
                                 <Input {...register("description", { required: "Description is required" })} placeholder="Enter description" type="text" />
                             </Field>
-                            <Field required invalid={!!errors.team_owner_id} errorText={errors.team_owner_id?.message} label="Owner ID">
-                                <Input {...register("team_owner_id", { required: "Owner ID is required" })} placeholder="Enter owner ID (uuid)" type="text" />
+                            <Field required invalid={!!errors.team_owner_id} errorText={errors.team_owner_id?.message} label="Team Owner">
+                                <Controller
+                                    control={control}
+                                    name="team_owner_id"
+                                    rules={{ required: "Team owner is required" }}
+                                    render={({ field }) => (
+                                        <Select
+                                            {...field}
+                                            placeholder="Select team owner..."
+                                            options={users.map(user => ({
+                                                value: user.id,
+                                                label: user.name
+                                            }))}
+                                            disabled={isLoadingUsers || isSubmitting}
+                                        />
+                                    )}
+                                />
                             </Field>
                         </VStack>
                         <Flex mt={4} direction="column" gap={4}>
