@@ -1,8 +1,9 @@
 import EditTeam from "@/components/Team/EditTeam";
 import DeleteTeam from "@/components/Team/DeleteTeam";
-import { IconButton, MenuContent, MenuRoot, MenuTrigger } from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { TeamPublic } from "@/client/TeamsService";
+import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu";
 
 interface TeamActionsMenuProps {
   team: TeamPublic;
