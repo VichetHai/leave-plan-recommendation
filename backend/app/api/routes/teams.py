@@ -19,7 +19,10 @@ router = APIRouter(prefix="/teams", tags=["teams"])
 
 @router.get("/", response_model=TeamsPublic)
 def list(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100  # type: ignore
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
 ) -> Any:
     """
     Retrieve Items.
@@ -69,7 +72,10 @@ def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> A
 
 @router.post("/", response_model=TeamPublic)
 def create(
-    *, session: SessionDep, current_user: CurrentUser, row_in: TeamCreate  # type: ignore
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    row_in: TeamCreate,
 ) -> Any:
     """
     Create new item.
@@ -114,7 +120,9 @@ def update(
 
 @router.delete("/{id}")
 def delete(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID  # type: ignore
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,  # type: ignore
 ) -> Message:
     """
     Delete an item.

@@ -1,15 +1,14 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 
 # Leave Plan Request
 # Shared properties
 class LeavePlanRequestBase(SQLModel):
     status: str = Field(max_length=50)
-    description: Optional[str] = None
+    description: str | None = None
     amount: float
 
 
@@ -20,8 +19,8 @@ class LeavePlanRequestCreate(LeavePlanRequestBase):
 
 # Update
 class LeavePlanRequestUpdate(LeavePlanRequestBase):
-    approver_id: Optional[uuid.UUID] = None
-    approved_at: Optional[datetime] = None
+    approver_id: uuid.UUID | None = None
+    approved_at: datetime | None = None
 
 
 # Table
@@ -36,12 +35,12 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
-    approver_id: Optional[uuid.UUID] = Field(
+    approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
 
     requested_at: datetime = Field(default_factory=datetime.utcnow)
-    approved_at: Optional[datetime] = None
+    approved_at: datetime | None = None
 
     # Relationships
     owner: "User" = Relationship(
@@ -62,9 +61,9 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     leave_type_id: uuid.UUID
-    approver_id: Optional[uuid.UUID]
+    approver_id: uuid.UUID | None
     requested_at: datetime
-    approved_at: Optional[datetime]
+    approved_at: datetime | None
 
 
 # Public list wrapper
@@ -81,12 +80,12 @@ class LeavePlanDetailBase(SQLModel):
 
 # Create
 class LeavePlanDetailCreate(LeavePlanDetailBase):
-    leave_plan_id: Optional[uuid.UUID]
+    leave_plan_id: uuid.UUID | None
 
 
 # Update
 class LeavePlanDetailUpdate(LeavePlanDetailBase):
-    leave_plan_id: Optional[uuid.UUID]
+    leave_plan_id: uuid.UUID | None
 
 
 # Database table

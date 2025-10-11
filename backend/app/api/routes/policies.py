@@ -6,10 +6,10 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.leave_models.leave_policy_model import (
+    PoliciesPublic,
     Policy,
     PolicyCreate,
     PolicyPublic,
-    PoliciesPublic,
     PolicyUpdate,
 )
 from app.models import Message
@@ -19,7 +19,10 @@ router = APIRouter(prefix="/policies", tags=["policies"])
 
 @router.get("/", response_model=PoliciesPublic)
 def list(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100  # type: ignore
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
 ) -> Any:
     """
     Retrieve Items.
@@ -69,7 +72,10 @@ def retrieve(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> A
 
 @router.post("/", response_model=PolicyPublic)
 def create(
-    *, session: SessionDep, current_user: CurrentUser, row_in: PolicyCreate  # type: ignore
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    row_in: PolicyCreate,
 ) -> Any:
     """
     Create new item.
@@ -114,7 +120,9 @@ def update(
 
 @router.delete("/{id}")
 def delete(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID  # type: ignore
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,  # type: ignore
 ) -> Message:
     """
     Delete an item.

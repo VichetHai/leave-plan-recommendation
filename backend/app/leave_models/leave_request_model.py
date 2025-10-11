@@ -1,8 +1,7 @@
 import uuid
 from datetime import date, datetime
-from typing import Optional
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 
 # Shared properties
@@ -13,7 +12,7 @@ class LeaveRequestBase(SQLModel):
     status: str = Field(
         max_length=50, include=["draft", "pending", "approved", "rejected"]
     )
-    description: Optional[str] = None
+    description: str | None = None
 
 
 # Create
@@ -24,8 +23,8 @@ class LeaveRequestCreate(LeaveRequestBase):
 
 # Update
 class LeaveRequestUpdate(LeaveRequestBase):
-    approver_id: Optional[uuid.UUID] = None
-    approved_at: Optional[datetime] = None
+    approver_id: uuid.UUID | None = None
+    approved_at: datetime | None = None
 
 
 # Database table
@@ -41,12 +40,12 @@ class LeaveRequest(LeaveRequestBase, table=True):
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
-    approver_id: Optional[uuid.UUID] = Field(
+    approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
 
     requested_at: datetime = Field(default_factory=datetime.utcnow)
-    approved_at: Optional[datetime] = None
+    approved_at: datetime | None = None
 
     # Relationships
     owner: "User" = Relationship(
@@ -67,9 +66,9 @@ class LeaveRequestPublic(LeaveRequestBase):
     owner_id: uuid.UUID
     team_id: uuid.UUID
     leave_type_id: uuid.UUID
-    approver_id: Optional[uuid.UUID]
+    approver_id: uuid.UUID | None
     requested_at: datetime
-    approved_at: Optional[datetime]
+    approved_at: datetime | None
 
 
 # Public list wrapper
