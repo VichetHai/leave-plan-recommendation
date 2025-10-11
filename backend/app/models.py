@@ -1,3 +1,4 @@
+from datetime import date
 import uuid
 
 from pydantic import EmailStr
@@ -162,3 +163,14 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+class LeaveRecommendation(SQLModel):
+    leave_date: date
+    is_bridge: bool
+    team_workload: int
+    preference_score: int
+    predicted_score: float
+
+class LeaveRecommendations(SQLModel):
+    data: list[LeaveRecommendation]
