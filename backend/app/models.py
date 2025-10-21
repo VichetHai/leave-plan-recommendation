@@ -19,6 +19,9 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
+    team_id: uuid.UUID | None = Field(
+        foreign_key="team.id", default=None, nullable=True, ondelete="SET NULL"
+    )
 
 
 # Properties to receive via API on creation
@@ -64,6 +67,10 @@ class User(UserBase, table=True):
     )
     leave_balances: list["LeaveBalance"] = Relationship(
         back_populates="owner", cascade_delete=True
+    )
+    team: "Team" = Relationship(
+        back_populates="team_members",
+        sa_relationship_kwargs={"foreign_keys": "[User.team_id]"},
     )
     teams: list["Team"] = Relationship(
         back_populates="owner",

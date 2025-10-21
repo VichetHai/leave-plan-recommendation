@@ -31,6 +31,7 @@ class Team(TeamBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
 
+    # Relationships
     team_owner: "User" = Relationship(
         back_populates="team_owners",
         sa_relationship_kwargs={"foreign_keys": "Team.team_owner_id"},
@@ -41,13 +42,24 @@ class Team(TeamBase, table=True):
     )
     leave_requests: list["LeaveRequest"] = Relationship(back_populates="team")
     leave_plan_requests: list["LeavePlanRequest"] = Relationship(back_populates="team")
+    team_members: list["User"] = Relationship(
+        back_populates="team",
+        sa_relationship_kwargs={"foreign_keys": "[User.team_id]"},
+    )
 
 
 # Properties to return via API, id is always required
+class TeamMembers(SQLModel):
+    id: uuid.UUID
+    full_name: str
+    email: str
+
+
 class TeamPublic(TeamBase):
     id: uuid.UUID
     team_owner_id: uuid.UUID
     owner_id: uuid.UUID
+    team_members: list[TeamMembers] = []
 
 
 class TeamsPublic(SQLModel):
