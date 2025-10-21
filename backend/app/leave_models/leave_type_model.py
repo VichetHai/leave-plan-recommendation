@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 class LeaveTypeBase(SQLModel):
     code: str = Field(index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
+    entitlement: int = Field(default=0)
     description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
 
