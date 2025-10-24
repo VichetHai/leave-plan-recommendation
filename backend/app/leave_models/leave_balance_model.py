@@ -20,7 +20,7 @@ class LeaveBalanceCreate(LeaveBalanceBase):
 
 # Properties to receive on item update
 class LeaveBalanceUpdate(LeaveBalanceBase):
-    pass
+    owner_id: uuid.UUID
 
 
 # Database model, database table inferred from class name
