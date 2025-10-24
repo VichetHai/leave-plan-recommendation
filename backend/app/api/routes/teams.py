@@ -112,8 +112,7 @@ def delete(
     row = session.get(Team, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    if not current_user.is_superuser and (row.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+
     session.delete(row)
     session.commit()
     return Message(message="Deleted successfully")

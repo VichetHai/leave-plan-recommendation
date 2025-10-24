@@ -15,7 +15,7 @@ class LeaveBalanceBase(SQLModel):
 
 # Properties to receive on item creation
 class LeaveBalanceCreate(LeaveBalanceBase):
-    pass
+    owner_id: uuid.UUID
 
 
 # Properties to receive on item update
@@ -29,6 +29,7 @@ class LeaveBalance(LeaveBalanceBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
+
     owner: "User" = Relationship(back_populates="leave_balances")
 
 

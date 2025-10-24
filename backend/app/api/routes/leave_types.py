@@ -86,8 +86,6 @@ def update(
     row = session.get(LeaveType, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    if not current_user.is_superuser and (row.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     update_dict = row_in.model_dump(exclude_unset=True)
     row.sqlmodel_update(update_dict)
@@ -112,8 +110,7 @@ def delete(
     row = session.get(LeaveType, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    if not current_user.is_superuser and (row.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+
     session.delete(row)
     session.commit()
     return Message(message="Deleted successfully")
