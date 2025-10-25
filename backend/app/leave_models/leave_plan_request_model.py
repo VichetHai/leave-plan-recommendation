@@ -1,26 +1,63 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlmodel import Field, Relationship, SQLModel
+
+
+# Leave Plan Request Details
+# Shared properties
+class LeavePlanDetailBase(SQLModel):
+    leave_date: date = Field(default_factory=datetime.now)
+
+
+# Create
+class LeavePlanDetailCreate(LeavePlanDetailBase):
+    pass
+
+
+# Update
+class LeavePlanDetailUpdate(LeavePlanDetailBase):
+    pass
+
+
+# Database table
+class LeavePlanDetail(LeavePlanDetailBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    leave_plan_id: uuid.UUID = Field(
+        foreign_key="leaveplanrequest.id", nullable=False, ondelete="CASCADE"
+    )
+
+    leave_plan_request: "LeavePlanRequest" = Relationship(back_populates="details")
+
+
+# Public (for API responses)
+class LeavePlanDetailPublic(LeavePlanDetailBase):
+    id: uuid.UUID
+    leave_plan_id: uuid.UUID
+
+
+# Public list wrapper
+class LeavePlanDetailsPublic(SQLModel):
+    data: list[LeavePlanDetailPublic]
+    count: int
 
 
 # Leave Plan Request
 # Shared properties
 class LeavePlanRequestBase(SQLModel):
-    status: str = Field(max_length=50)
     description: str | None = None
-    amount: float
 
 
 # Create
 class LeavePlanRequestCreate(LeavePlanRequestBase):
     leave_type_id: uuid.UUID
+    details: list[LeavePlanDetailCreate]
 
 
 # Update
 class LeavePlanRequestUpdate(LeavePlanRequestBase):
-    approver_id: uuid.UUID | None = None
-    approved_at: datetime | None = None
+    leave_type_id: uuid.UUID
+    details: list[LeavePlanDetailCreate]
 
 
 # Table
@@ -35,10 +72,11 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
+    amount: float
+    status: str = Field(max_length=50)
     approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
-
     requested_at: datetime = Field(default_factory=datetime.utcnow)
     approved_at: datetime | None = None
 
@@ -64,47 +102,12 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
     approver_id: uuid.UUID | None
     requested_at: datetime
     approved_at: datetime | None
+    status: str
+    amount: float
+    details: list[LeavePlanDetailPublic] = []
 
 
 # Public list wrapper
 class LeavePlanRequestsPublic(SQLModel):
     data: list[LeavePlanRequestPublic]
-    count: int
-
-
-# Leave Plan Request Details
-# Shared properties
-class LeavePlanDetailBase(SQLModel):
-    leave_date: datetime = Field(default_factory=datetime.utcnow)
-
-
-# Create
-class LeavePlanDetailCreate(LeavePlanDetailBase):
-    leave_plan_id: uuid.UUID | None
-
-
-# Update
-class LeavePlanDetailUpdate(LeavePlanDetailBase):
-    leave_plan_id: uuid.UUID | None
-
-
-# Database table
-class LeavePlanDetail(LeavePlanDetailBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    leave_plan_id: uuid.UUID = Field(
-        foreign_key="leaveplanrequest.id", nullable=False, ondelete="CASCADE"
-    )
-
-    leave_plan_request: "LeavePlanRequest" = Relationship(back_populates="details")
-
-
-# Public (for API responses)
-class LeavePlanDetailPublic(LeavePlanDetailBase):
-    id: uuid.UUID
-    leave_plan_id: uuid.UUID
-
-
-# Public list wrapper
-class LeavePlanDetailsPublic(SQLModel):
-    data: list[LeavePlanDetailPublic]
     count: int

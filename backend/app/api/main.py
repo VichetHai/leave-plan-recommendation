@@ -10,7 +10,8 @@ from app.api.routes import (
     teams,
     users,
     utils,
-    leave_balances
+    leave_balances,
+    leave_plan_requests,
 )
 from app.core.config import settings
 
@@ -24,6 +25,7 @@ api_router.include_router(public_holidays.router)
 api_router.include_router(leave_types.router)
 api_router.include_router(teams.router)
 api_router.include_router(leave_balances.router)
+api_router.include_router(leave_plan_requests.router)
 
 
 if settings.ENVIRONMENT == "local":
