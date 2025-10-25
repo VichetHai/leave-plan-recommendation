@@ -17,9 +17,12 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutTeamsRouteImport } from './routes/_layout/teams'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutRecommendationsRouteImport } from './routes/_layout/recommendations'
 import { Route as LayoutPublicHolidaysRouteImport } from './routes/_layout/public-holidays'
 import { Route as LayoutPoliciesRouteImport } from './routes/_layout/policies'
 import { Route as LayoutLeaveTypesRouteImport } from './routes/_layout/leave-types'
+import { Route as LayoutLeavePlanRequestsRouteImport } from './routes/_layout/leave-plan-requests'
+import { Route as LayoutLeaveBalancesRouteImport } from './routes/_layout/leave-balances'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutHealthCheckRouteImport } from './routes/_layout/health-check'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
@@ -63,6 +66,11 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutRecommendationsRoute = LayoutRecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutPublicHolidaysRoute = LayoutPublicHolidaysRouteImport.update({
   id: '/public-holidays',
   path: '/public-holidays',
@@ -76,6 +84,16 @@ const LayoutPoliciesRoute = LayoutPoliciesRouteImport.update({
 const LayoutLeaveTypesRoute = LayoutLeaveTypesRouteImport.update({
   id: '/leave-types',
   path: '/leave-types',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLeavePlanRequestsRoute = LayoutLeavePlanRequestsRouteImport.update({
+  id: '/leave-plan-requests',
+  path: '/leave-plan-requests',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLeaveBalancesRoute = LayoutLeaveBalancesRouteImport.update({
+  id: '/leave-balances',
+  path: '/leave-balances',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
@@ -102,9 +120,12 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/leave-balances': typeof LayoutLeaveBalancesRoute
+  '/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
   '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
+  '/recommendations': typeof LayoutRecommendationsRoute
   '/settings': typeof LayoutSettingsRoute
   '/teams': typeof LayoutTeamsRoute
   '/': typeof LayoutIndexRoute
@@ -117,9 +138,12 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/health-check': typeof LayoutHealthCheckRoute
   '/items': typeof LayoutItemsRoute
+  '/leave-balances': typeof LayoutLeaveBalancesRoute
+  '/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
   '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
+  '/recommendations': typeof LayoutRecommendationsRoute
   '/settings': typeof LayoutSettingsRoute
   '/teams': typeof LayoutTeamsRoute
   '/': typeof LayoutIndexRoute
@@ -134,9 +158,12 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/health-check': typeof LayoutHealthCheckRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/leave-balances': typeof LayoutLeaveBalancesRoute
+  '/_layout/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
   '/_layout/leave-types': typeof LayoutLeaveTypesRoute
   '/_layout/policies': typeof LayoutPoliciesRoute
   '/_layout/public-holidays': typeof LayoutPublicHolidaysRoute
+  '/_layout/recommendations': typeof LayoutRecommendationsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/teams': typeof LayoutTeamsRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -151,9 +178,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/health-check'
     | '/items'
+    | '/leave-balances'
+    | '/leave-plan-requests'
     | '/leave-types'
     | '/policies'
     | '/public-holidays'
+    | '/recommendations'
     | '/settings'
     | '/teams'
     | '/'
@@ -166,9 +196,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/health-check'
     | '/items'
+    | '/leave-balances'
+    | '/leave-plan-requests'
     | '/leave-types'
     | '/policies'
     | '/public-holidays'
+    | '/recommendations'
     | '/settings'
     | '/teams'
     | '/'
@@ -182,9 +215,12 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/health-check'
     | '/_layout/items'
+    | '/_layout/leave-balances'
+    | '/_layout/leave-plan-requests'
     | '/_layout/leave-types'
     | '/_layout/policies'
     | '/_layout/public-holidays'
+    | '/_layout/recommendations'
     | '/_layout/settings'
     | '/_layout/teams'
     | '/_layout/'
@@ -256,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/recommendations': {
+      id: '/_layout/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof LayoutRecommendationsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/public-holidays': {
       id: '/_layout/public-holidays'
       path: '/public-holidays'
@@ -275,6 +318,20 @@ declare module '@tanstack/react-router' {
       path: '/leave-types'
       fullPath: '/leave-types'
       preLoaderRoute: typeof LayoutLeaveTypesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/leave-plan-requests': {
+      id: '/_layout/leave-plan-requests'
+      path: '/leave-plan-requests'
+      fullPath: '/leave-plan-requests'
+      preLoaderRoute: typeof LayoutLeavePlanRequestsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/leave-balances': {
+      id: '/_layout/leave-balances'
+      path: '/leave-balances'
+      fullPath: '/leave-balances'
+      preLoaderRoute: typeof LayoutLeaveBalancesRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/items': {
@@ -305,9 +362,12 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutHealthCheckRoute: typeof LayoutHealthCheckRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutLeaveBalancesRoute: typeof LayoutLeaveBalancesRoute
+  LayoutLeavePlanRequestsRoute: typeof LayoutLeavePlanRequestsRoute
   LayoutLeaveTypesRoute: typeof LayoutLeaveTypesRoute
   LayoutPoliciesRoute: typeof LayoutPoliciesRoute
   LayoutPublicHolidaysRoute: typeof LayoutPublicHolidaysRoute
+  LayoutRecommendationsRoute: typeof LayoutRecommendationsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutTeamsRoute: typeof LayoutTeamsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -317,9 +377,12 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutHealthCheckRoute: LayoutHealthCheckRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutLeaveBalancesRoute: LayoutLeaveBalancesRoute,
+  LayoutLeavePlanRequestsRoute: LayoutLeavePlanRequestsRoute,
   LayoutLeaveTypesRoute: LayoutLeaveTypesRoute,
   LayoutPoliciesRoute: LayoutPoliciesRoute,
   LayoutPublicHolidaysRoute: LayoutPublicHolidaysRoute,
+  LayoutRecommendationsRoute: LayoutRecommendationsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutTeamsRoute: LayoutTeamsRoute,
   LayoutIndexRoute: LayoutIndexRoute,

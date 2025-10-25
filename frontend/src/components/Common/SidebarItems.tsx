@@ -1,7 +1,7 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
-import { FiActivity, FiBriefcase, FiCalendar, FiFileText, FiHome, FiSettings, FiUsers } from "react-icons/fi"
+import { FiActivity, FiBriefcase, FiCalendar, FiCreditCard, FiFileText, FiHome, FiSend, FiSettings, FiTrendingUp, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
 import type { UserPublic } from "@/client"
@@ -13,6 +13,9 @@ const items = [
   { icon: FiCalendar, title: "Public Holiday", path: "/public-holidays" },
   { icon: FiFileText, title: "Leave Types", path: "/leave-types" },
   { icon: FiUsers, title: "Teams", path: "/teams" },
+  { icon: FiCreditCard, title: "Leave Balances", path: "/leave-balances" },
+  { icon: FiSend, title: "Leave Requests", path: "/leave-plan-requests" },
+  { icon: FiTrendingUp, title: "Recommendations", path: "/recommendations" },
   { icon: FiActivity, title: "Health Check", path: "/health-check" },
   { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]

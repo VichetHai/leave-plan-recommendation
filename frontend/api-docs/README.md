@@ -5,6 +5,14 @@ This folder contains comprehensive API reference documentation for the backend s
 ## Available API Documentation
 
 - [**Users API**](./users-api.md) - User management, authentication, and profile operations
+- [**Policies API**](./policies-api.md) - Policy configuration and management
+- [**Public Holidays API**](./public-holidays-api.md) - Public holiday calendar management
+- [**Leave Types API**](./leave-types-api.md) - Leave type definitions and configuration
+- [**Teams API**](./teams-api.md) - Team organization and membership management
+- [**Leave Balances API**](./leave-balances-api.md) - Employee leave balance tracking and management
+- [**Leave Plan Requests API**](./leave-plan-requests-api.md) - Leave request submission and approval workflow
+- [**Recommendations API**](./recommendations-api.md) - AI-powered leave plan recommendations
+- [**Utils API**](./utils-api.md) - Utility endpoints for health checks and system status
 
 ## Documentation Structure
 
