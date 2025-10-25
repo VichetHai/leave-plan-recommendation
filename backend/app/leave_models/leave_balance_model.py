@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 
 # Leave Balance
@@ -15,12 +15,12 @@ class LeaveBalanceBase(SQLModel):
 
 # Properties to receive on item creation
 class LeaveBalanceCreate(LeaveBalanceBase):
-    pass
+    owner_id: uuid.UUID
 
 
 # Properties to receive on item update
 class LeaveBalanceUpdate(LeaveBalanceBase):
-    pass
+    owner_id: uuid.UUID
 
 
 # Database model, database table inferred from class name
@@ -29,6 +29,7 @@ class LeaveBalance(LeaveBalanceBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
+
     owner: "User" = Relationship(back_populates="leave_balances")
 
 

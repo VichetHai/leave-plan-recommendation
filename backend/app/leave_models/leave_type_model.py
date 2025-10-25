@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 
 # Leave Type
@@ -8,6 +8,7 @@ from sqlmodel import SQLModel, Field, Relationship
 class LeaveTypeBase(SQLModel):
     code: str = Field(index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
+    entitlement: int = Field(default=0)
     description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
 
