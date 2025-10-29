@@ -46,7 +46,7 @@ class RecommendLeavePlanRouter:
 
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
-        recommendations = self.recommend_leave_days(data, N=18)
+        recommendations = self.recommend_leave_days(data, leave_entitlement=18)
         response_list = self.format_recommendations_for_response(recommendations)
         
         return LeaveRecommendations(data=response_list)
@@ -194,15 +194,14 @@ class RecommendLeavePlanRouter:
         data["predicted_score"] = model.predict(X)
         return model, data
 
-    def recommend_leave_days(self, data, N=18, min_gap=2, max_workload=4):
+    def recommend_leave_days(self, data, leave_entitlement=18):
+        # TODO:: get leave_entitlement from leave_balance
         selected_days = []
         sorted_data = data.sort_values("predicted_score", ascending=False)
         for _, row in sorted_data.iterrows():
-            if all(abs(row.day_of_year - d) > min_gap for d in selected_days):
-                if row.team_workload <= max_workload:
-                    selected_days.append(row.day_of_year)
-                    if len(selected_days) == N:
-                        break
+            selected_days.append(row.day_of_year)
+            if len(selected_days) == leave_entitlement:
+                break
         recommendations = data[data.day_of_year.isin(selected_days)].sort_values("day_of_year")
         return recommendations
 
