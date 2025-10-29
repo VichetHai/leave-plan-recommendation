@@ -6,8 +6,10 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
+from app.models import User
 from app.leave_models.public_holiday_model import PublicHoliday
-from sqlmodel import select
+from app.leave_models.leave_plan_request_model import LeavePlanDetail, LeavePlanRequest
+from sqlmodel import select, func
 from datetime import datetime
 
 
@@ -38,6 +40,7 @@ class RecommendLeavePlanRouter:
         Retrieve items.
         """
         self.year = year
+        self.current_user = current_user
 
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
@@ -69,7 +72,6 @@ class RecommendLeavePlanRouter:
         statement = select(PublicHoliday.date).where(PublicHoliday.date.like(f"{self.year}-%"))
         results = session.exec(statement)
         public_holidays = results.all()
-        print('public_holidays', public_holidays)
 
         holidays = pd.to_datetime(public_holidays)
         data["is_holiday"] = data["date"].isin(holidays) | data["weekday"].isin([5,6])
@@ -88,26 +90,45 @@ class RecommendLeavePlanRouter:
         data["is_bridge"] = bridge_day
         return data
 
-    def get_team_workloads(self, data):
-        # TODO:: integrate with database
+    def set_total_team(self, session):
+        statement = select(func.count()).select_from(User).where(User.team_id == self.current_user.team_id)
+        self.total_team = session.exec(statement).one()
+    
+    def get_team_workloads(self, data, session):
+        self.set_total_team(session)
+        statement = select(
+            LeavePlanDetail.leave_date,
+            func.count(LeavePlanDetail.id).label("total_leave_days")
+        ).join(
+            LeavePlanRequest,
+            LeavePlanDetail.leave_plan_id == LeavePlanRequest.id
+        ).where(
+            LeavePlanRequest.team_id == self.current_user.team_id
+        ).group_by(
+            LeavePlanDetail.leave_date
+        ).order_by(
+            LeavePlanDetail.leave_date
+        )
+        results = session.exec(statement).all()
+
         team_workload_dict = {
-            "2025-01-06": 5,
-            "2025-01-02": 3,
-            "2025-01-03": 2,
+            date_obj.strftime("%Y-%m-%d"): count
+            for date_obj, count in results
         }
         team_workload_dict = {pd.to_datetime(k): v for k, v in team_workload_dict.items()}
         data["team_workload"] = data["date"].map(team_workload_dict).fillna(data["team_workload"])
         return data
 
     def set_recommend_rule(self, data):
-        total_team = 6 # TODO:: integrate with database
         percentage = 0.5 # TODO:: integrate with database
         data["preference_score"] = (
             (data["weekday"].isin([0, 4])).astype(int) * 1 +  # Monday/Friday bonus
             (data["is_bridge"]).astype(int) * 2 +  # bridge day bonus
-            (data["team_workload"] <= total_team * percentage).astype(int) * 1  # 50% workload bonus
+            (data["team_workload"] <= self.total_team * percentage).astype(int) * 1  # 50% workload bonus
         )
         return data
+
+   
 
     def generate_leave_data(self, session):
         days = pd.date_range(f"{self.year}-01-01", periods=365)
@@ -119,7 +140,7 @@ class RecommendLeavePlanRouter:
         })
         data = self.get_holidays(data, session)
         data = self.find_bridge_days(data)
-        data = self.get_team_workloads(data)
+        data = self.get_team_workloads(data, session)
         data = self.set_recommend_rule(data)
         return data
 
