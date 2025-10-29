@@ -174,7 +174,7 @@ class NewPassword(SQLModel):
 
 class LeaveRecommendation(SQLModel):
     leave_date: date
-    is_bridge: bool
+    bridge_holiday: bool
     team_workload: int
     preference_score: int
     predicted_score: float

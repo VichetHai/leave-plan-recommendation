@@ -1,3 +1,4 @@
+import ast
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
@@ -6,8 +7,11 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
+from app.models import User
+from app.leave_models.leave_policy_model import Policy
 from app.leave_models.public_holiday_model import PublicHoliday
-from sqlmodel import select
+from app.leave_models.leave_plan_request_model import LeavePlanDetail, LeavePlanRequest
+from sqlmodel import select, func
 from datetime import datetime
 
 
@@ -38,6 +42,7 @@ class RecommendLeavePlanRouter:
         Retrieve items.
         """
         self.year = year
+        self.current_user = current_user
 
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
@@ -55,7 +60,7 @@ class RecommendLeavePlanRouter:
         matching the Pydantic response model.
         """
         # Select only relevant columns
-        response_df = recommendations[["date", "is_bridge", "team_workload", "preference_score", "predicted_score"]]
+        response_df = recommendations[["date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
 
         # Rename columns to match Pydantic model
         response_df = response_df.rename(columns={"date": "leave_date"})
@@ -69,7 +74,6 @@ class RecommendLeavePlanRouter:
         statement = select(PublicHoliday.date).where(PublicHoliday.date.like(f"{self.year}-%"))
         results = session.exec(statement)
         public_holidays = results.all()
-        print('public_holidays', public_holidays)
 
         holidays = pd.to_datetime(public_holidays)
         data["is_holiday"] = data["date"].isin(holidays) | data["weekday"].isin([5,6])
@@ -85,28 +89,87 @@ class RecommendLeavePlanRouter:
                 bridge_day.append(True)
             else:
                 bridge_day.append(False)
-        data["is_bridge"] = bridge_day
+        data["bridge_holiday"] = bridge_day
         return data
 
-    def get_team_workloads(self, data):
-        # TODO:: integrate with database
+    def set_total_team(self, session):
+        statement = select(func.count()).select_from(User).where(User.team_id == self.current_user.team_id)
+        self.total_team = session.exec(statement).one()
+    
+    def get_team_workloads(self, data, session):
+        self.set_total_team(session)
+        statement = select(
+            LeavePlanDetail.leave_date,
+            func.count(LeavePlanDetail.id).label("total_leave_days")
+        ).join(
+            LeavePlanRequest,
+            LeavePlanDetail.leave_plan_id == LeavePlanRequest.id
+        ).where(
+            LeavePlanRequest.team_id == self.current_user.team_id
+        ).group_by(
+            LeavePlanDetail.leave_date
+        ).order_by(
+            LeavePlanDetail.leave_date
+        )
+        results = session.exec(statement).all()
+
         team_workload_dict = {
-            "2025-01-06": 5,
-            "2025-01-02": 3,
-            "2025-01-03": 2,
+            date_obj.strftime("%Y-%m-%d"): count
+            for date_obj, count in results
         }
         team_workload_dict = {pd.to_datetime(k): v for k, v in team_workload_dict.items()}
         data["team_workload"] = data["date"].map(team_workload_dict).fillna(data["team_workload"])
         return data
 
-    def set_recommend_rule(self, data):
-        total_team = 6 # TODO:: integrate with database
-        percentage = 0.5 # TODO:: integrate with database
-        data["preference_score"] = (
-            (data["weekday"].isin([0, 4])).astype(int) * 1 +  # Monday/Friday bonus
-            (data["is_bridge"]).astype(int) * 2 +  # bridge day bonus
-            (data["team_workload"] <= total_team * percentage).astype(int) * 1  # 50% workload bonus
-        )
+    def set_recommend_policy(self, data, session):
+        # dynamic policies
+        # policies = [    
+        #     {"code": "weekday", "operation": "in", "value": "[0,4]", "score": 1},
+        #     {"code": "bridge_holiday", "operation": "==", "value": "True", "score": 2},
+        #     {"code": "team_workload", "operation": ">", "value": "50%", "score": -2},
+        # ]
+        statement = select(Policy).where(Policy.is_active==True)
+        policies = session.exec(statement).all()
+
+        # Initialize score column
+        data["preference_score"] = 0
+
+        # Apply each policy dynamically
+        for p in policies:
+            col = p.code
+            op = p.operation
+            val = p.value
+            score = int(p.score)
+
+            # Convert value string safely
+            try:
+                if col == "team_workload" and val.endswith("%"):
+                    val = self.total_team * float(val.strip("%")) / 100
+                val = ast.literal_eval(val)
+            except (ValueError, SyntaxError):
+                pass  # leave as string or number        
+
+            # Apply condition dynamically
+            if op == "in":
+                if isinstance(val, list):
+                    mask = data[col].isin(val)
+                else:
+                    mask = data[col] == val
+            elif op == ">":
+                mask = data[col] > float(val)
+            elif op == "<":
+                mask = data[col] < float(val)
+            elif op == ">=":
+                mask = data[col] >= float(val)
+            elif op == "<=":
+                mask = data[col] <= float(val)
+            elif op == "==":
+                mask = data[col] == val
+            else:
+                continue  # unknown operation, skip
+
+            # Add or subtract score
+            data.loc[mask, "preference_score"] += score
         return data
 
     def generate_leave_data(self, session):
@@ -117,10 +180,10 @@ class RecommendLeavePlanRouter:
             "weekday": days.weekday,
             "team_workload": 0,
         })
-        data = self.get_holidays(data, session)
+        data = self.get_holidays(data=data, session=session)
         data = self.find_bridge_days(data)
-        data = self.get_team_workloads(data)
-        data = self.set_recommend_rule(data)
+        data = self.get_team_workloads(data=data, session=session)
+        data = self.set_recommend_policy(data=data, session=session)
         return data
 
     def train_leave_model(self, data):
