@@ -1,3 +1,4 @@
+import ast
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Query
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
 from app.models import User
+from app.leave_models.leave_policy_model import Policy
 from app.leave_models.public_holiday_model import PublicHoliday
 from app.leave_models.leave_plan_request_model import LeavePlanDetail, LeavePlanRequest
 from sqlmodel import select, func
@@ -58,7 +60,7 @@ class RecommendLeavePlanRouter:
         matching the Pydantic response model.
         """
         # Select only relevant columns
-        response_df = recommendations[["date", "is_bridge", "team_workload", "preference_score", "predicted_score"]]
+        response_df = recommendations[["date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
 
         # Rename columns to match Pydantic model
         response_df = response_df.rename(columns={"date": "leave_date"})
@@ -87,7 +89,7 @@ class RecommendLeavePlanRouter:
                 bridge_day.append(True)
             else:
                 bridge_day.append(False)
-        data["is_bridge"] = bridge_day
+        data["bridge_holiday"] = bridge_day
         return data
 
     def set_total_team(self, session):
@@ -119,19 +121,54 @@ class RecommendLeavePlanRouter:
         data["team_workload"] = data["date"].map(team_workload_dict).fillna(data["team_workload"])
         return data
 
-    def set_recommend_rule(self, data):
-        percentage = 0.5 # TODO:: integrate with database
+    def set_recommend_policy(self, data, session):
+        policies = session.exec(select(Policy)).all()
+        # dynamic policies
+        policies = [    
+            {"code": "weekday", "operation": "in", "value": "[0,4]", "score": 1},
+            {"code": "bridge_holiday", "operation": "==", "value": "True", "score": 2},
+            {"code": "team_workload", "operation": ">", "value": "50%", "score": -2},
+        ]
 
-        # Low Workload Bonus: (team_workload <= threshold)
-        #(data["team_workload"] <= self.total_team * percentage).astype(int) * 1 +  # Low workload bonus (+1)
-        # 🚨 NEW: High Workload Penalty: (team_workload > threshold)
-        #(data["team_workload"] > self.total_team * percentage).astype(int) * -2  # High workload penalty (-2)
+        # Initialize score column
+        data["preference_score"] = 0
 
-        data["preference_score"] = (
-            (data["weekday"].isin([0, 4])).astype(int) * 1 +  # Monday/Friday bonus
-            (data["is_bridge"]).astype(int) * 2 +  # bridge day bonus
-            (data["team_workload"] > self.total_team * percentage).astype(int) * -2  # High workload penalty (-2)
-        )
+        # Apply each policy dynamically
+        for p in policies:
+            col = p["code"]
+            op = p["operation"]
+            val = p["value"]
+            score = int(p["score"])
+
+            # Convert value string safely
+            try:
+                if col == "team_workload" and val.endswith("%"):
+                    val = self.total_team * float(val.strip("%")) / 100
+                val = ast.literal_eval(val)
+            except (ValueError, SyntaxError):
+                pass  # leave as string or number        
+
+            # Apply condition dynamically
+            if op == "in":
+                if isinstance(val, list):
+                    mask = data[col].isin(val)
+                else:
+                    mask = data[col] == val
+            elif op == ">":
+                mask = data[col] > float(val)
+            elif op == "<":
+                mask = data[col] < float(val)
+            elif op == ">=":
+                mask = data[col] >= float(val)
+            elif op == "<=":
+                mask = data[col] <= float(val)
+            elif op == "==":
+                mask = data[col] == val
+            else:
+                continue  # unknown operation, skip
+
+            # Add or subtract score
+            data.loc[mask, "preference_score"] += score
         return data
 
    
@@ -144,10 +181,10 @@ class RecommendLeavePlanRouter:
             "weekday": days.weekday,
             "team_workload": 0,
         })
-        data = self.get_holidays(data, session)
+        data = self.get_holidays(data=data, session=session)
         data = self.find_bridge_days(data)
-        data = self.get_team_workloads(data, session)
-        data = self.set_recommend_rule(data)
+        data = self.get_team_workloads(data=data, session=session)
+        data = self.set_recommend_policy(data=data, session=session)
         return data
 
     def train_leave_model(self, data):
