@@ -2,13 +2,14 @@ import uuid
 
 from sqlmodel import Field, Relationship, SQLModel
 
-
 # Policy
 # Shared properties
 class PolicyBase(SQLModel):
     code: str = Field(index=True, max_length=255)
     name: str = Field(default="Untitled", max_length=255)
+    operation: str | None = Field(default="==", max_length=10)  # comparison operator (in, >, <, >=, <=, "==")
     value: str = Field(max_length=255)
+    score: float | None= Field(default=0) # score to apply if rule matches
     description: str | None = Field(default=None, max_length=255)
     is_active: bool = True
 

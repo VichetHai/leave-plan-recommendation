@@ -122,23 +122,24 @@ class RecommendLeavePlanRouter:
         return data
 
     def set_recommend_policy(self, data, session):
-        policies = session.exec(select(Policy)).all()
         # dynamic policies
-        policies = [    
-            {"code": "weekday", "operation": "in", "value": "[0,4]", "score": 1},
-            {"code": "bridge_holiday", "operation": "==", "value": "True", "score": 2},
-            {"code": "team_workload", "operation": ">", "value": "50%", "score": -2},
-        ]
+        # policies = [    
+        #     {"code": "weekday", "operation": "in", "value": "[0,4]", "score": 1},
+        #     {"code": "bridge_holiday", "operation": "==", "value": "True", "score": 2},
+        #     {"code": "team_workload", "operation": ">", "value": "50%", "score": -2},
+        # ]
+        statement = select(Policy).where(Policy.is_active==True)
+        policies = session.exec(statement).all()
 
         # Initialize score column
         data["preference_score"] = 0
 
         # Apply each policy dynamically
         for p in policies:
-            col = p["code"]
-            op = p["operation"]
-            val = p["value"]
-            score = int(p["score"])
+            col = p.code
+            op = p.operation
+            val = p.value
+            score = int(p.score)
 
             # Convert value string safely
             try:
@@ -170,8 +171,6 @@ class RecommendLeavePlanRouter:
             # Add or subtract score
             data.loc[mask, "preference_score"] += score
         return data
-
-   
 
     def generate_leave_data(self, session):
         days = pd.date_range(f"{self.year}-01-01", periods=365)
