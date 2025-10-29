@@ -121,10 +121,16 @@ class RecommendLeavePlanRouter:
 
     def set_recommend_rule(self, data):
         percentage = 0.5 # TODO:: integrate with database
+
+        # Low Workload Bonus: (team_workload <= threshold)
+        #(data["team_workload"] <= self.total_team * percentage).astype(int) * 1 +  # Low workload bonus (+1)
+        # 🚨 NEW: High Workload Penalty: (team_workload > threshold)
+        #(data["team_workload"] > self.total_team * percentage).astype(int) * -2  # High workload penalty (-2)
+
         data["preference_score"] = (
             (data["weekday"].isin([0, 4])).astype(int) * 1 +  # Monday/Friday bonus
             (data["is_bridge"]).astype(int) * 2 +  # bridge day bonus
-            (data["team_workload"] <= self.total_team * percentage).astype(int) * 1  # 50% workload bonus
+            (data["team_workload"] > self.total_team * percentage).astype(int) * -2  # High workload penalty (-2)
         )
         return data
 
