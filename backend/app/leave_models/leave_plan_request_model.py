@@ -69,6 +69,7 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     team_id: uuid.UUID = Field(
         foreign_key="team.id", nullable=False, ondelete="CASCADE"
     )
+    year: str | None = Field(max_length=4, default_factory=lambda: str(date.today().year))
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
