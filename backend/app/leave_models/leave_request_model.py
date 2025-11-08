@@ -8,38 +8,37 @@ from sqlmodel import Field, Relationship, SQLModel
 class LeaveRequestBase(SQLModel):
     start_date: date
     end_date: date
-    amount: float
-    status: str = Field(
-        max_length=50, include=["draft", "pending", "approved", "rejected"]
-    )
     description: str | None = None
 
 
 # Create
 class LeaveRequestCreate(LeaveRequestBase):
-    team_id: uuid.UUID
     leave_type_id: uuid.UUID
 
 
 # Update
 class LeaveRequestUpdate(LeaveRequestBase):
-    approver_id: uuid.UUID | None = None
-    approved_at: datetime | None = None
+    leave_type_id: uuid.UUID
 
 
 # Database table
 class LeaveRequest(LeaveRequestBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     team_id: uuid.UUID = Field(
         foreign_key="team.id", nullable=False, ondelete="CASCADE"
     )
-    year: str | None = Field(max_length=4, default_factory=lambda: str(date.today().year))
+    year: str | None = Field(
+        max_length=4, default_factory=lambda: str(date.today().year)
+    )
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
+    )
+    amount: float
+    status: str = Field(
+        max_length=50, include=["draft", "pending", "approved", "rejected"]
     )
     requested_at: datetime = Field(default_factory=datetime.now)
     submitted_at: datetime | None = None
@@ -65,8 +64,8 @@ class LeaveRequest(LeaveRequestBase, table=True):
 class LeaveRequestPublic(LeaveRequestBase):
     id: uuid.UUID
     owner_id: uuid.UUID
-    team_id: uuid.UUID
     leave_type_id: uuid.UUID
+    status: str
     requested_at: datetime
     submitted_at: datetime | None
     approver_id: uuid.UUID | None
