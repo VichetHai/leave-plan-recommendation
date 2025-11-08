@@ -184,7 +184,7 @@ def delete(
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
-    if row.status != "draft" and current_user.id != row.owner_id:
+    if row.status != "draft" or current_user.id != row.owner_id:
         raise HTTPException(
             status_code=403, detail="Not enough permission to delete this item"
         )
