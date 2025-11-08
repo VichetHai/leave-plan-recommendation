@@ -75,11 +75,12 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     )
     amount: float
     status: str = Field(max_length=50)
+    requested_at: datetime = Field(default_factory=datetime.now)
+    submitted_at: datetime | None = None
     approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
-    requested_at: datetime = Field(default_factory=datetime.utcnow)
-    approved_at: datetime | None = None
+    approval_at: datetime | None = None
 
     # Relationships
     owner: "User" = Relationship(
@@ -100,9 +101,10 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     leave_type_id: uuid.UUID
-    approver_id: uuid.UUID | None
     requested_at: datetime
-    approved_at: datetime | None
+    submitted_at: datetime | None
+    approver_id: uuid.UUID | None
+    approval_at: datetime | None
     status: str
     amount: float
     details: list[LeavePlanDetailPublic] = []

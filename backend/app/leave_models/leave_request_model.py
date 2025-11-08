@@ -41,12 +41,12 @@ class LeaveRequest(LeaveRequestBase, table=True):
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
+    requested_at: datetime = Field(default_factory=datetime.now)
+    submitted_at: datetime | None = None
     approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
-
-    requested_at: datetime = Field(default_factory=datetime.utcnow)
-    approved_at: datetime | None = None
+    approval_at: datetime | None = None
 
     # Relationships
     owner: "User" = Relationship(
@@ -67,9 +67,10 @@ class LeaveRequestPublic(LeaveRequestBase):
     owner_id: uuid.UUID
     team_id: uuid.UUID
     leave_type_id: uuid.UUID
-    approver_id: uuid.UUID | None
     requested_at: datetime
-    approved_at: datetime | None
+    submitted_at: datetime | None
+    approver_id: uuid.UUID | None
+    approval_at: datetime | None
 
 
 # Public list wrapper
