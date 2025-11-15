@@ -1,14 +1,16 @@
-import { Badge, Button, Container, Flex, Heading, Input, Table, Text } from "@chakra-ui/react"
+import { Badge, Button, Container, Flex, Heading, Input, Table, Text, Tooltip } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import { Skeleton } from "@/components/ui/skeleton"
 
+
 interface LeaveRecommendation {
     leave_date: string
-    leave_period: string
-    leave_reason_score: number
+    bridge_holiday: boolean
+    team_workload: number
+    preference_score: number
     predicted_score: number
 }
 
@@ -37,33 +39,68 @@ export const Route = createFileRoute("/_layout/recommendations")({
     component: Recommendations,
 })
 
+function getSampleRecommendations(year: number): LeaveRecommendation[] {
+    // Simple deterministic sample rows for the provided year
+    return [
+        {
+            leave_date: `${year}-01-02`,
+            bridge_holiday: false,
+            team_workload: 0.25,
+            preference_score: 0.90,
+            predicted_score: 0.88,
+        },
+        {
+            leave_date: `${year}-02-14`,
+            bridge_holiday: false,
+            team_workload: 0.60,
+            preference_score: 0.70,
+            predicted_score: 0.65,
+        },
+        {
+            leave_date: `${year}-04-18`,
+            bridge_holiday: true,
+            team_workload: 0.35,
+            preference_score: 0.75,
+            predicted_score: 0.80,
+        },
+        {
+            leave_date: `${year}-08-15`,
+            bridge_holiday: true,
+            team_workload: 0.80,
+            preference_score: 0.30,
+            predicted_score: 0.40,
+        },
+        {
+            leave_date: `${year}-12-26`,
+            bridge_holiday: true,
+            team_workload: 0.15,
+            preference_score: 0.95,
+            predicted_score: 0.92,
+        },
+    ]
+}
+
 function PendingRecommendations() {
     const skeletons = Array(5)
         .fill(null)
         .map((_, i) => (
             <Table.Row key={i}>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
             </Table.Row>
         ))
-
     return (
         <Table.Root size={{ base: "sm", md: "md" }}>
             <Table.Header>
                 <Table.Row>
                     <Table.ColumnHeader w="sm">Leave Date</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Leave Period</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Reason Score</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Bridge Holiday</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Team Workload</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Preference Score</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Predicted Score</Table.ColumnHeader>
                 </Table.Row>
             </Table.Header>
@@ -77,62 +114,59 @@ function RecommendationsTable({ year }: { year: number }) {
         queryKey: ["recommendations", year],
         queryFn: () => RecommendationsService.getRecommendations({ year }),
     })
-
     const recommendations = data?.data ?? []
-
     if (isLoading) {
         return <PendingRecommendations />
     }
-
-    if (recommendations.length === 0) {
-        return (
-            <Text fontSize="lg" textAlign="center" py={8} color="gray.500">
-                No recommendations found for year {year}
-            </Text>
-        )
-    }
-
+    const isSample = recommendations.length === 0
+    const rows = isSample ? getSampleRecommendations(year) : recommendations
     return (
         <Table.Root size={{ base: "sm", md: "md" }}>
+            {isSample ? (
+                <Text fontSize="sm" color="gray.500" px={2} py={2}>
+                    Showing sample recommendations while the API has no data.
+                </Text>
+            ) : null}
             <Table.Header>
                 <Table.Row>
                     <Table.ColumnHeader w="sm">Leave Date</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Leave Period</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Reason Score</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Bridge Holiday</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Team Workload</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Preference Score</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Predicted Score</Table.ColumnHeader>
                 </Table.Row>
             </Table.Header>
             <Table.Body>
-                {recommendations.map((recommendation, index) => (
+                {rows.map((rec, index) => (
                     <Table.Row key={index}>
-                        <Table.Cell>{recommendation.leave_date}</Table.Cell>
+                        <Table.Cell>{rec.leave_date}</Table.Cell>
                         <Table.Cell>
-                            <Badge colorPalette="blue">{recommendation.leave_period}</Badge>
-                        </Table.Cell>
-                        <Table.Cell>
-                            <Badge
-                                colorPalette={
-                                    recommendation.leave_reason_score > 0.7
-                                        ? "green"
-                                        : recommendation.leave_reason_score > 0.4
-                                            ? "yellow"
-                                            : "red"
-                                }
-                            >
-                                {recommendation.leave_reason_score.toFixed(2)}
+                            <Badge colorPalette={rec.bridge_holiday ? "green" : "gray"}>
+                                {rec.bridge_holiday ? "Bridge" : "No"}
                             </Badge>
                         </Table.Cell>
                         <Table.Cell>
-                            <Badge
-                                colorPalette={
-                                    recommendation.predicted_score > 0.7
-                                        ? "green"
-                                        : recommendation.predicted_score > 0.4
-                                            ? "yellow"
-                                            : "red"
-                                }
-                            >
-                                {recommendation.predicted_score.toFixed(2)}
+                            <Tooltip.Root>
+                                <Tooltip.Trigger asChild>
+                                    <span>
+                                        <Badge colorPalette={rec.team_workload < 0.4 ? "green" : rec.team_workload < 0.7 ? "yellow" : "red"}>
+                                            {rec.team_workload.toFixed(2)}
+                                        </Badge>
+                                    </span>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>
+                                    Lower is better
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        </Table.Cell>
+                        <Table.Cell>
+                            <Badge colorPalette={rec.preference_score > 0.7 ? "green" : rec.preference_score > 0.4 ? "yellow" : "red"}>
+                                {rec.preference_score.toFixed(2)}
+                            </Badge>
+                        </Table.Cell>
+                        <Table.Cell>
+                            <Badge colorPalette={rec.predicted_score > 0.7 ? "green" : rec.predicted_score > 0.4 ? "yellow" : "red"}>
+                                {rec.predicted_score.toFixed(2)}
                             </Badge>
                         </Table.Cell>
                     </Table.Row>

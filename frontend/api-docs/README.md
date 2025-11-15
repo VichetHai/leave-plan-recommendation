@@ -11,6 +11,7 @@ This folder contains comprehensive API reference documentation for the backend s
 - [**Teams API**](./teams-api.md) - Team organization and membership management
 - [**Leave Balances API**](./leave-balances-api.md) - Employee leave balance tracking and management
 - [**Leave Plan Requests API**](./leave-plan-requests-api.md) - Leave request submission and approval workflow
+- [**Leave Requests API**](./leave-requests-api.md) - Single-span leave requests (start/end dates) with submit/approve/reject workflow
 - [**Recommendations API**](./recommendations-api.md) - AI-powered leave plan recommendations
 - [**Utils API**](./utils-api.md) - Utility endpoints for health checks and system status
 

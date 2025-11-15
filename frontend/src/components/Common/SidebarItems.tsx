@@ -1,7 +1,7 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
-import { FiBriefcase, FiCalendar, FiCreditCard, FiFileText, FiHome, FiSend, FiSettings, FiTrendingUp, FiUsers } from "react-icons/fi"
+import { FiCalendar, FiCreditCard, FiFileText, FiHome, FiSend, FiSettings, FiTrendingUp, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
 import type { UserPublic } from "@/client"
@@ -19,7 +19,6 @@ const userItems = [
 // Additional menu items for superusers (admin privilege)
 const superuserItems = [
   { icon: FiHome, title: "Dashboard", path: "/" },
-  { icon: FiBriefcase, title: "Items", path: "/items" },
   { icon: FiFileText, title: "Policies", path: "/policies" },
   { icon: FiCalendar, title: "Public Holidays", path: "/public-holidays" },
   { icon: FiFileText, title: "Leave Types", path: "/leave-types" },
