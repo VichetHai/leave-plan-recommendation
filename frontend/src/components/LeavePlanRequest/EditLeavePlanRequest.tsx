@@ -8,11 +8,12 @@ import {
     Textarea,
     VStack,
 } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
 import type { ApiError } from "@/client/core/ApiError"
+import LeaveTypesService from "@/client/LeaveTypesService"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
@@ -25,6 +26,7 @@ import {
     DialogTitle,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
 
 interface LeavePlanRequestPublic {
     id: string
@@ -41,6 +43,7 @@ interface LeavePlanRequestPublic {
 
 interface LeavePlanRequestUpdate {
     description?: string
+    leave_type_id?: string
     details?: Array<{ leave_date: string }>
 }
 
@@ -82,6 +85,20 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
         leavePlanRequest.details?.[0]?.leave_date || ""
     )
 
+    // Fetch leave types for dropdown
+    const { data: leaveTypesData } = useQuery({
+        queryKey: ["leave-types"],
+        queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
+    })
+
+    const leaveTypes = leaveTypesData?.data || []
+    const leaveTypeOptions = leaveTypes
+        .filter(lt => lt.is_active)
+        .map(lt => ({
+            value: lt.id,
+            label: lt.name,
+        }))
+
     const {
         register,
         handleSubmit,
@@ -92,6 +109,7 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
         criteriaMode: "all",
         defaultValues: {
             description: leavePlanRequest.description,
+            leave_type_id: leavePlanRequest.leave_type_id,
         },
     })
 
@@ -159,6 +177,21 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                                     })}
                                     placeholder="Reason for leave request"
                                     rows={3}
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.leave_type_id}
+                                errorText={errors.leave_type_id?.message}
+                                label="Leave Type"
+                            >
+                                <Select
+                                    {...register("leave_type_id", {
+                                        required: "Leave Type is required",
+                                    })}
+                                    options={leaveTypeOptions}
+                                    placeholder="Select a leave type..."
                                 />
                             </Field>
 

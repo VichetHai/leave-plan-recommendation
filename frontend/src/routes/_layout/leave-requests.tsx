@@ -109,8 +109,11 @@ function LeaveRequestsTable() {
     const leaveTypeMap = Object.fromEntries(leaveTypes.map((lt) => [lt.id, lt.name]))
     const userMap = Object.fromEntries(users.map((u) => [u.id, u.name]))
 
-    if (isLoading) {
-        return <PendingLeaveRequests />
+    // Wait for leave requests, users, and leave types to load before showing table
+    const isUsersLoading = users.length === 0;
+    const isLeaveTypesLoading = leaveTypes.length === 0;
+    if (isLoading || isUsersLoading || isLeaveTypesLoading) {
+        return <PendingLeaveRequests />;
     }
 
     const getStatusColor = (status: string) => {
@@ -136,6 +139,7 @@ function LeaveRequestsTable() {
                         <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Start</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">End</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Approver</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Requested At</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
@@ -149,6 +153,7 @@ function LeaveRequestsTable() {
                             <Table.Cell truncate maxW="sm">{leaveTypeMap[req.leave_type_id] || req.leave_type_id}</Table.Cell>
                             <Table.Cell>{new Date(req.start_date).toLocaleDateString()}</Table.Cell>
                             <Table.Cell>{new Date(req.end_date).toLocaleDateString()}</Table.Cell>
+                            <Table.Cell truncate maxW="sm">{req.approver_id ? (userMap[req.approver_id] || req.approver_id) : "-"}</Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={getStatusColor(req.status)}>
                                     {req.status}

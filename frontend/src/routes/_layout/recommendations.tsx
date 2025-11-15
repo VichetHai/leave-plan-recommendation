@@ -39,53 +39,12 @@ export const Route = createFileRoute("/_layout/recommendations")({
     component: Recommendations,
 })
 
-function getSampleRecommendations(year: number): LeaveRecommendation[] {
-    // Simple deterministic sample rows for the provided year
-    return [
-        {
-            leave_date: `${year}-01-02`,
-            bridge_holiday: false,
-            team_workload: 0.25,
-            preference_score: 0.90,
-            predicted_score: 0.88,
-        },
-        {
-            leave_date: `${year}-02-14`,
-            bridge_holiday: false,
-            team_workload: 0.60,
-            preference_score: 0.70,
-            predicted_score: 0.65,
-        },
-        {
-            leave_date: `${year}-04-18`,
-            bridge_holiday: true,
-            team_workload: 0.35,
-            preference_score: 0.75,
-            predicted_score: 0.80,
-        },
-        {
-            leave_date: `${year}-08-15`,
-            bridge_holiday: true,
-            team_workload: 0.80,
-            preference_score: 0.30,
-            predicted_score: 0.40,
-        },
-        {
-            leave_date: `${year}-12-26`,
-            bridge_holiday: true,
-            team_workload: 0.15,
-            preference_score: 0.95,
-            predicted_score: 0.92,
-        },
-    ]
-}
 
 function PendingRecommendations() {
     const skeletons = Array(5)
         .fill(null)
         .map((_, i) => (
             <Table.Row key={i}>
-                <Table.Cell><Skeleton height="20px" /></Table.Cell>
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
@@ -118,15 +77,15 @@ function RecommendationsTable({ year }: { year: number }) {
     if (isLoading) {
         return <PendingRecommendations />
     }
-    const isSample = recommendations.length === 0
-    const rows = isSample ? getSampleRecommendations(year) : recommendations
+    if (recommendations.length === 0) {
+        return (
+            <Text fontSize="sm" color="gray.500" px={2} py={2}>
+                No recommendations available for {year}.
+            </Text>
+        )
+    }
     return (
         <Table.Root size={{ base: "sm", md: "md" }}>
-            {isSample ? (
-                <Text fontSize="sm" color="gray.500" px={2} py={2}>
-                    Showing sample recommendations while the API has no data.
-                </Text>
-            ) : null}
             <Table.Header>
                 <Table.Row>
                     <Table.ColumnHeader w="sm">Leave Date</Table.ColumnHeader>
@@ -137,7 +96,7 @@ function RecommendationsTable({ year }: { year: number }) {
                 </Table.Row>
             </Table.Header>
             <Table.Body>
-                {rows.map((rec, index) => (
+                {recommendations.map((rec, index) => (
                     <Table.Row key={index}>
                         <Table.Cell>{rec.leave_date}</Table.Cell>
                         <Table.Cell>

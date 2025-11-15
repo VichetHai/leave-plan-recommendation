@@ -7,13 +7,14 @@ import type { IconType } from "react-icons/lib"
 import type { UserPublic } from "@/client"
 
 // Menu items for regular users (normal privilege)
+// Updated to show only the specified menus for normal users
 const userItems = [
   { icon: FiHome, title: "Dashboard", path: "/" },
-  { icon: FiCreditCard, title: "My Leave Balance", path: "/leave-balances" },
-  { icon: FiSend, title: "My Leave Requests", path: "/leave-plan-requests" },
-  { icon: FiTrendingUp, title: "Recommendations", path: "/recommendations" },
   { icon: FiCalendar, title: "Public Holidays", path: "/public-holidays" },
   { icon: FiSettings, title: "User Settings", path: "/settings" },
+  { icon: FiSend, title: "Leave Plan Requests", path: "/leave-plan-requests" },
+  { icon: FiSend, title: "Leave Requests", path: "/leave-requests" },
+  { icon: FiTrendingUp, title: "Recommendations", path: "/recommendations" },
 ]
 
 // Additional menu items for superusers (admin privilege)

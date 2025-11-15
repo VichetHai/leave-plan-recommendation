@@ -1,46 +1,15 @@
-import { Table } from "@chakra-ui/react"
+import { Box, VStack } from "@chakra-ui/react"
 import { Skeleton } from "../ui/skeleton"
 
 const PendingLeaveRequests = () => {
-    const skeletons = Array(5)
-        .fill(null)
-        .map((_, i) => (
-            <Table.Row key={i}>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-                <Table.Cell>
-                    <Skeleton height="20px" />
-                </Table.Cell>
-            </Table.Row>
-        ))
-
     return (
-        <Table.Root size={{ base: "sm", md: "md" }}>
-            <Table.Header>
-                <Table.Row>
-                    <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Start Date</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">End Date</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Requested At</Table.ColumnHeader>
-                    <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>{skeletons}</Table.Body>
-        </Table.Root>
+        <VStack gap={4} mt={2} w="full">
+            {Array.from({ length: 5 }).map((_, i) => (
+                <Box key={i} w="full">
+                    <Skeleton height="28px" />
+                </Box>
+            ))}
+        </VStack>
     )
 }
 

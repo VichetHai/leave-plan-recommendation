@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { OpenAPI } from "@/client/core/OpenAPI"
+import LeaveTypesService from "@/client/LeaveTypesService"
+import { UsersService } from "@/client"
 import AddLeavePlanRequest from "@/components/LeavePlanRequest/AddLeavePlanRequest"
 import { LeavePlanRequestActionsMenu } from "@/components/Common/LeavePlanRequestActionsMenu"
 import PendingLeavePlanRequests from "@/components/Pending/PendingLeavePlanRequests"
@@ -90,6 +92,22 @@ function LeavePlanRequestsTable() {
         placeholderData: (prevData) => prevData,
     })
 
+    // Fetch users for user names
+    const { data: usersData } = useQuery({
+        queryKey: ["users"],
+        queryFn: () => UsersService.readUsers({ limit: 1000 }),
+    })
+
+    // Fetch leave types for leave type names
+    const { data: leaveTypesData } = useQuery({
+        queryKey: ["leave-types"],
+        queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
+    })
+
+    // Create lookup maps
+    const usersMap = new Map(usersData?.data.map(user => [user.id, user.full_name || user.email]) || [])
+    const leaveTypesMap = new Map(leaveTypesData?.data.map(lt => [lt.id, lt.name]) || [])
+
     const setPage = (page: number) => {
         navigate({
             to: "/leave-plan-requests",
@@ -123,10 +141,12 @@ function LeavePlanRequestsTable() {
                 <Table.Header>
                     <Table.Row>
                         <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">User</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Approver</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Amount</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Requested At</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Approved At</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
                 </Table.Header>
@@ -135,6 +155,15 @@ function LeavePlanRequestsTable() {
                         <Table.Row key={request.id} opacity={isPlaceholderData ? 0.5 : 1}>
                             <Table.Cell truncate maxW="md">
                                 {request.description}
+                            </Table.Cell>
+                            <Table.Cell>
+                                {usersMap.get(request.owner_id) || "-"}
+                            </Table.Cell>
+                            <Table.Cell>
+                                {leaveTypesMap.get(request.leave_type_id) || "-"}
+                            </Table.Cell>
+                            <Table.Cell>
+                                {request.approver_id ? usersMap.get(request.approver_id) || "-" : "-"}
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette="blue">{request.amount}</Badge>
@@ -146,11 +175,6 @@ function LeavePlanRequestsTable() {
                             </Table.Cell>
                             <Table.Cell>
                                 {new Date(request.requested_at).toLocaleDateString()}
-                            </Table.Cell>
-                            <Table.Cell>
-                                {request.approved_at
-                                    ? new Date(request.approved_at).toLocaleDateString()
-                                    : "-"}
                             </Table.Cell>
                             <Table.Cell>
                                 <LeavePlanRequestActionsMenu leavePlanRequest={request} />
