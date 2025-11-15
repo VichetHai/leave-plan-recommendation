@@ -24,6 +24,10 @@ import {
     DialogTrigger,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
+import LeaveTypesService from "@/client/LeaveTypesService"
+import { useUsers } from "@/hooks/useUsers"
+import { useEffect } from "react"
 
 interface LeaveBalanceCreate {
     year: string
@@ -60,6 +64,7 @@ const AddLeaveBalance = () => {
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors, isValid, isSubmitting },
     } = useForm<LeaveBalanceCreate>({
         mode: "onChange",
@@ -71,6 +76,19 @@ const AddLeaveBalance = () => {
             owner_id: "",
         },
     })
+
+    // Fetch leave types
+    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
+    const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(true)
+    useEffect(() => {
+        LeaveTypesService.readLeaveTypes({ limit: 100 }).then((res) => {
+            setLeaveTypes(res.data)
+            setLoadingLeaveTypes(false)
+        })
+    }, [])
+
+    // Fetch users
+    const { data: users = [], isLoading: loadingUsers } = useUsers()
 
     const mutation = useMutation({
         mutationFn: (data: LeaveBalanceCreate) =>
@@ -151,14 +169,19 @@ const AddLeaveBalance = () => {
                                 required
                                 invalid={!!errors.leave_type_id}
                                 errorText={errors.leave_type_id?.message}
-                                label="Leave Type ID"
+                                label="Leave Type"
                             >
-                                <Input
+                                <Select
+                                    placeholder={loadingLeaveTypes ? "Loading..." : "Select leave type"}
                                     {...register("leave_type_id", {
-                                        required: "Leave Type ID is required",
+                                        required: "Leave Type is required",
                                     })}
-                                    placeholder="Leave type UUID"
-                                    type="text"
+                                    disabled={loadingLeaveTypes}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue("leave_type_id", e.target.value, { shouldValidate: true })}
+                                    options={leaveTypes.map((type) => ({
+                                        value: type.id,
+                                        label: type.name,
+                                    }))}
                                 />
                             </Field>
 
@@ -166,14 +189,19 @@ const AddLeaveBalance = () => {
                                 required
                                 invalid={!!errors.owner_id}
                                 errorText={errors.owner_id?.message}
-                                label="Owner ID"
+                                label="Owner"
                             >
-                                <Input
+                                <Select
+                                    placeholder={loadingUsers ? "Loading..." : "Select user"}
                                     {...register("owner_id", {
-                                        required: "Owner ID is required",
+                                        required: "Owner is required",
                                     })}
-                                    placeholder="User UUID"
-                                    type="text"
+                                    disabled={loadingUsers}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue("owner_id", e.target.value, { shouldValidate: true })}
+                                    options={users.map((user) => ({
+                                        value: user.id,
+                                        label: user.name,
+                                    }))}
                                 />
                             </Field>
                         </VStack>
