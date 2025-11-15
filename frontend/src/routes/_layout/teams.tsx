@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { TeamsService } from "@/client/TeamsService"
+import { useUsers } from "@/hooks/useUsers"
 import AddTeam from "@/components/Team/AddTeam"
 import { TeamActionsMenu } from "@/components/Common/TeamActionsMenu"
 import PendingTeams from "@/components/Pending/PendingTeams"
@@ -42,6 +43,8 @@ function TeamsTable() {
     ...getTeamsQueryOptions({ page }),
     placeholderData: (prevData) => prevData,
   })
+  // Load users to map owner id to readable name
+  const { data: users = [] } = useUsers()
   const setPage = (page: number) => {
     navigate({ to: "/teams", search: (prev) => ({ ...prev, page }) })
   }
@@ -65,7 +68,7 @@ function TeamsTable() {
             <Table.Row key={team.id} opacity={isPlaceholderData ? 0.5 : 1}>
               <Table.Cell>{team.name}</Table.Cell>
               <Table.Cell>{team.description || ""}</Table.Cell>
-              <Table.Cell>{team.team_owner_id}</Table.Cell>
+              <Table.Cell>{users.find(u => u.id === team.team_owner_id)?.name || team.team_owner_id}</Table.Cell>
               <Table.Cell>
                 <Badge colorPalette={team.is_active ? "green" : "gray"}>
                   {team.is_active ? "Active" : "Inactive"}

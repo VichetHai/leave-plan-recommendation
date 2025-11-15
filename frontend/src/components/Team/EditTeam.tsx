@@ -4,16 +4,19 @@ import { FaExchangeAlt } from "react-icons/fa"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TeamsService, TeamUpdate, TeamPublic } from "@/client/TeamsService"
 import useCustomToast from "@/hooks/useCustomToast"
+import { useUsers } from "@/hooks/useUsers"
 import { handleError } from "@/utils"
 import { Button, Flex, Input, VStack } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Select } from "@/components/ui/select"
 import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const EditTeam = ({ team }: { team: TeamPublic }) => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
+    const { data: users = [], isLoading: isLoadingUsers } = useUsers()
 
     const {
         control,
@@ -97,7 +100,22 @@ const EditTeam = ({ team }: { team: TeamPublic }) => {
                                 <Input {...register("description", { required: "Description is required" })} placeholder="Enter description" type="text" />
                             </Field>
                             <Field required invalid={!!errors.team_owner_id} errorText={errors.team_owner_id?.message} label="Team Owner">
-                                <Input {...register("team_owner_id", { required: "Team owner is required" })} placeholder="Enter team owner ID" type="text" />
+                                <Controller
+                                    control={control}
+                                    name="team_owner_id"
+                                    rules={{ required: "Team owner is required" }}
+                                    render={({ field }) => (
+                                        <Select
+                                            {...field}
+                                            placeholder="Select team owner..."
+                                            options={users.map(user => ({
+                                                value: user.id,
+                                                label: user.name
+                                            }))}
+                                            disabled={isLoadingUsers || isSubmitting}
+                                        />
+                                    )}
+                                />
                             </Field>
                         </VStack>
                         <Flex mt={4} direction="column" gap={4}>
