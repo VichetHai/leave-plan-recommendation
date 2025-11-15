@@ -21,6 +21,7 @@ import { Route as LayoutRecommendationsRouteImport } from './routes/_layout/reco
 import { Route as LayoutPublicHolidaysRouteImport } from './routes/_layout/public-holidays'
 import { Route as LayoutPoliciesRouteImport } from './routes/_layout/policies'
 import { Route as LayoutLeaveTypesRouteImport } from './routes/_layout/leave-types'
+import { Route as LayoutLeaveRequestsRouteImport } from './routes/_layout/leave-requests'
 import { Route as LayoutLeavePlanRequestsRouteImport } from './routes/_layout/leave-plan-requests'
 import { Route as LayoutLeaveBalancesRouteImport } from './routes/_layout/leave-balances'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
@@ -86,6 +87,11 @@ const LayoutLeaveTypesRoute = LayoutLeaveTypesRouteImport.update({
   path: '/leave-types',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutLeaveRequestsRoute = LayoutLeaveRequestsRouteImport.update({
+  id: '/leave-requests',
+  path: '/leave-requests',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutLeavePlanRequestsRoute = LayoutLeavePlanRequestsRouteImport.update({
   id: '/leave-plan-requests',
   path: '/leave-plan-requests',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/items': typeof LayoutItemsRoute
   '/leave-balances': typeof LayoutLeaveBalancesRoute
   '/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
+  '/leave-requests': typeof LayoutLeaveRequestsRoute
   '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/items': typeof LayoutItemsRoute
   '/leave-balances': typeof LayoutLeaveBalancesRoute
   '/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
+  '/leave-requests': typeof LayoutLeaveRequestsRoute
   '/leave-types': typeof LayoutLeaveTypesRoute
   '/policies': typeof LayoutPoliciesRoute
   '/public-holidays': typeof LayoutPublicHolidaysRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/leave-balances': typeof LayoutLeaveBalancesRoute
   '/_layout/leave-plan-requests': typeof LayoutLeavePlanRequestsRoute
+  '/_layout/leave-requests': typeof LayoutLeaveRequestsRoute
   '/_layout/leave-types': typeof LayoutLeaveTypesRoute
   '/_layout/policies': typeof LayoutPoliciesRoute
   '/_layout/public-holidays': typeof LayoutPublicHolidaysRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/leave-balances'
     | '/leave-plan-requests'
+    | '/leave-requests'
     | '/leave-types'
     | '/policies'
     | '/public-holidays'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/leave-balances'
     | '/leave-plan-requests'
+    | '/leave-requests'
     | '/leave-types'
     | '/policies'
     | '/public-holidays'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/_layout/items'
     | '/_layout/leave-balances'
     | '/_layout/leave-plan-requests'
+    | '/_layout/leave-requests'
     | '/_layout/leave-types'
     | '/_layout/policies'
     | '/_layout/public-holidays'
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutLeaveTypesRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/leave-requests': {
+      id: '/_layout/leave-requests'
+      path: '/leave-requests'
+      fullPath: '/leave-requests'
+      preLoaderRoute: typeof LayoutLeaveRequestsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/leave-plan-requests': {
       id: '/_layout/leave-plan-requests'
       path: '/leave-plan-requests'
@@ -364,6 +383,7 @@ interface LayoutRouteChildren {
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutLeaveBalancesRoute: typeof LayoutLeaveBalancesRoute
   LayoutLeavePlanRequestsRoute: typeof LayoutLeavePlanRequestsRoute
+  LayoutLeaveRequestsRoute: typeof LayoutLeaveRequestsRoute
   LayoutLeaveTypesRoute: typeof LayoutLeaveTypesRoute
   LayoutPoliciesRoute: typeof LayoutPoliciesRoute
   LayoutPublicHolidaysRoute: typeof LayoutPublicHolidaysRoute
@@ -379,6 +399,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutLeaveBalancesRoute: LayoutLeaveBalancesRoute,
   LayoutLeavePlanRequestsRoute: LayoutLeavePlanRequestsRoute,
+  LayoutLeaveRequestsRoute: LayoutLeaveRequestsRoute,
   LayoutLeaveTypesRoute: LayoutLeaveTypesRoute,
   LayoutPoliciesRoute: LayoutPoliciesRoute,
   LayoutPublicHolidaysRoute: LayoutPublicHolidaysRoute,
