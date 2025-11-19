@@ -2,6 +2,8 @@ import uuid
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.leave_models.presentable_model import UserPresentable, LeaveTypePresentable
+
 
 # Leave Balance
 # Shared properties
@@ -31,6 +33,7 @@ class LeaveBalance(LeaveBalanceBase, table=True):
     )
 
     owner: "User" = Relationship(back_populates="leave_balances")
+    leave_type: "LeaveType" = Relationship(back_populates="leave_balances")
 
 
 # Properties to return via API, id is always required
@@ -38,6 +41,8 @@ class LeaveBalancePublic(LeaveBalanceBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
+    owner: UserPresentable
+    leave_type: LeaveTypePresentable
 
 class LeaveBalancesPublic(SQLModel):
     data: list[LeaveBalancePublic]

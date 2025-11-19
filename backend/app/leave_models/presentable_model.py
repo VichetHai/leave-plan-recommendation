@@ -11,3 +11,8 @@ class UserPresentable(SQLModel):
 class TeamPresentable(SQLModel):
     id: uuid.UUID
     name: str
+
+class LeaveTypePresentable(SQLModel):
+    id: uuid.UUID
+    code: str
+    name: str
