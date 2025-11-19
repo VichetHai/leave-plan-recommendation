@@ -3,6 +3,8 @@ from datetime import datetime, date
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.leave_models.presentable_model import UserPresentable, LeaveTypePresentable
+
 
 # Leave Plan Request Details
 # Shared properties
@@ -33,7 +35,6 @@ class LeavePlanDetail(LeavePlanDetailBase, table=True):
 # Public (for API responses)
 class LeavePlanDetailPublic(LeavePlanDetailBase):
     id: uuid.UUID
-    leave_plan_id: uuid.UUID
 
 
 # Public list wrapper
@@ -108,6 +109,10 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
     status: str
     amount: float
     details: list[LeavePlanDetailPublic] = []
+
+    owner: UserPresentable
+    leave_type: LeaveTypePresentable
+    approver: UserPresentable | None
 
 
 # Public list wrapper
