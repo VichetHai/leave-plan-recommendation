@@ -3,6 +3,8 @@ from datetime import date, datetime
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.leave_models.presentable_model import UserPresentable, LeaveTypePresentable
+
 
 # Shared properties
 class LeaveRequestBase(SQLModel):
@@ -70,6 +72,10 @@ class LeaveRequestPublic(LeaveRequestBase):
     submitted_at: datetime | None
     approver_id: uuid.UUID | None
     approval_at: datetime | None
+
+    owner: UserPresentable
+    leave_type: LeaveTypePresentable
+    approver: UserPresentable | None
 
 
 # Public list wrapper
