@@ -11,6 +11,7 @@ class UserPresentable(SQLModel):
 class TeamPresentable(SQLModel):
     id: uuid.UUID
     name: str
+    team_owner: UserPresentable | None
 
 class LeaveTypePresentable(SQLModel):
     id: uuid.UUID
