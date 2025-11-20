@@ -25,7 +25,7 @@ def generate_balance(*, session: Session, owner_id: uuid.UUID) -> LeaveBalance |
         LeaveBalance.year == year,
         LeaveBalance.leave_type_id == leave_type.id,
     )
-    exists = session.exec(exists_statement).one_or_none()
+    exists = session.exec(exists_statement).first()
 
     if not exists:
         row = LeaveBalance.model_validate(row_in)
