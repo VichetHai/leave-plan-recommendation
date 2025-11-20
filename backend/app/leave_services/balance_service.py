@@ -34,4 +34,4 @@ def generate_balance(*, session: Session, owner_id: uuid.UUID) -> LeaveBalance |
         session.refresh(row)
         return row
 
-    return None
+    return exists

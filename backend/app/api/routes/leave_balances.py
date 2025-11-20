@@ -49,7 +49,7 @@ def retrieve_me(session: SessionDep, current_user: CurrentUser) -> Any:  # type:
     row_statement = select(LeaveBalance).where(
         LeaveBalance.owner_id == current_user.id, LeaveBalance.year == year
     )
-    row = session.exec(row_statement).one_or_none()
+    row = session.exec(row_statement).first()
     if not row:
         # generate year balance
         generated = balance_service.generate_balance(
