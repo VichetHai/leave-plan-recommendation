@@ -1,4 +1,7 @@
 import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { useEffect, useState } from "react"
+import LeaveTypesService from "@/client/LeaveTypesService"
+import { useUsers } from "@/hooks/useUsers"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -99,6 +102,17 @@ function LeaveBalancesTable() {
         placeholderData: (prevData) => prevData,
     })
 
+    // Fetch leave types
+    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
+    useEffect(() => {
+        LeaveTypesService.readLeaveTypes({ limit: 100 }).then((res) => {
+            setLeaveTypes(res.data)
+        })
+    }, [])
+
+    // Fetch users
+    const { data: users = [] } = useUsers()
+
     const setPage = (page: number) => {
         navigate({
             to: "/leave-balances",
@@ -108,6 +122,11 @@ function LeaveBalancesTable() {
 
     const leaveBalances = data?.data.slice(0, PER_PAGE) ?? []
     const count = data?.count ?? 0
+
+    // Map leave type id to name
+    const leaveTypeMap = Object.fromEntries(leaveTypes.map((lt) => [lt.id, lt.name]))
+    // Map user id to name
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u.name]))
 
     if (isLoading) {
         return <PendingLeaveBalances />
@@ -120,8 +139,8 @@ function LeaveBalancesTable() {
                     <Table.Row>
                         <Table.ColumnHeader w="sm">Year</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Balance</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Leave Type ID</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Owner ID</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Owner</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
                 </Table.Header>
@@ -135,10 +154,10 @@ function LeaveBalancesTable() {
                                 </Badge>
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {leaveBalance.leave_type_id}
+                                {leaveTypeMap[leaveBalance.leave_type_id] || leaveBalance.leave_type_id}
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {leaveBalance.owner_id}
+                                {userMap[leaveBalance.owner_id] || leaveBalance.owner_id}
                             </Table.Cell>
                             <Table.Cell>
                                 <LeaveBalanceActionsMenu leaveBalance={leaveBalance} />

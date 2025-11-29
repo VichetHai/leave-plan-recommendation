@@ -8,12 +8,11 @@ import {
     Textarea,
     VStack,
 } from "@chakra-ui/react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
 import type { ApiError } from "@/client/core/ApiError"
-import LeaveTypesService from "@/client/LeaveTypesService"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
@@ -27,38 +26,41 @@ import {
 } from "../ui/dialog"
 import { Field } from "../ui/field"
 import { Select } from "../ui/select"
+import LeaveTypesService from "@/client/LeaveTypesService"
 
-interface LeavePlanRequestPublic {
+interface LeaveRequestPublic {
     id: string
+    start_date: string
+    end_date: string
     description: string
     leave_type_id: string
     owner_id: string
-    approver_id: string
+    approver_id: string | null
     requested_at: string
-    approved_at: string | null
+    submitted_at: string | null
+    approval_at: string | null
     status: string
-    amount: number
-    details: any[]
 }
 
-interface LeavePlanRequestUpdate {
+interface LeaveRequestUpdate {
+    start_date?: string
+    end_date?: string
     description?: string
     leave_type_id?: string
-    details?: Array<{ leave_date: string }>
 }
 
-// Temporary service - will be replaced by auto-generated LeavePlanRequestsService
-const LeavePlanRequestsService = {
-    updateLeavePlanRequest: async ({
+// Temporary service - replace with auto-generated client when available
+const LeaveRequestsService = {
+    updateLeaveRequest: async ({
         id,
         requestBody,
     }: {
         id: string
-        requestBody: LeavePlanRequestUpdate
+        requestBody: LeaveRequestUpdate
     }) => {
         const baseUrl = OpenAPI.BASE || ""
         const token = localStorage.getItem("access_token") || ""
-        const response = await fetch(`${baseUrl}/api/v1/leave-plan-requests/${id}`, {
+        const response = await fetch(`${baseUrl}/api/v1/leave-requests/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -67,60 +69,66 @@ const LeavePlanRequestsService = {
             body: JSON.stringify(requestBody),
         })
         if (!response.ok) {
-            throw new Error("Failed to update leave plan request")
+            throw new Error("Failed to update leave request")
         }
         return response.json()
     },
 }
 
-interface EditLeavePlanRequestProps {
-    leavePlanRequest: LeavePlanRequestPublic
+interface EditLeaveRequestProps {
+    leaveRequest: LeaveRequestPublic
 }
 
-const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) => {
+const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
-    const [leaveDate, setLeaveDate] = useState(
-        leavePlanRequest.details?.[0]?.leave_date || ""
-    )
-
-    // Fetch leave types for dropdown
-    const { data: leaveTypesData } = useQuery({
-        queryKey: ["leave-types"],
-        queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
-    })
-
-    const leaveTypes = leaveTypesData?.data || []
-    const leaveTypeOptions = leaveTypes
-        .filter(lt => lt.is_active)
-        .map(lt => ({
-            value: lt.id,
-            label: lt.name,
-        }))
 
     const {
         register,
         handleSubmit,
         reset,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
-    } = useForm<LeavePlanRequestUpdate>({
+    } = useForm<LeaveRequestUpdate>({
         mode: "onChange",
         criteriaMode: "all",
         defaultValues: {
-            description: leavePlanRequest.description,
-            leave_type_id: leavePlanRequest.leave_type_id,
+            description: leaveRequest.description,
+            start_date: leaveRequest.start_date?.slice(0, 10),
+            end_date: leaveRequest.end_date?.slice(0, 10),
+            leave_type_id: leaveRequest.leave_type_id,
         },
     })
 
+    // Fetch leave types for dropdown
+    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
+    const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(true)
+    useEffect(() => {
+        let active = true
+        LeaveTypesService.readLeaveTypes({ limit: 100 })
+            .then((res) => {
+                if (!active) return
+                setLeaveTypes(res.data)
+            })
+            .finally(() => {
+                if (!active) return
+                setLoadingLeaveTypes(false)
+            })
+        return () => {
+            active = false
+        }
+    }, [])
+
     const mutation = useMutation({
-        mutationFn: (data: LeavePlanRequestUpdate) =>
-            LeavePlanRequestsService.updateLeavePlanRequest({
-                id: leavePlanRequest.id,
+        mutationFn: (data: LeaveRequestUpdate) =>
+            LeaveRequestsService.updateLeaveRequest({
+                id: leaveRequest.id,
                 requestBody: data,
             }),
         onSuccess: () => {
-            showSuccessToast("Leave plan request updated successfully.")
+            showSuccessToast("Leave request updated successfully.")
             reset()
             setIsOpen(false)
         },
@@ -128,21 +136,17 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
             handleError(err)
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["leave-plan-requests"] })
+            queryClient.invalidateQueries({ queryKey: ["leave-requests"] })
         },
     })
 
-    const onSubmit: SubmitHandler<LeavePlanRequestUpdate> = async (data) => {
-        // Convert leave date string to details array
-        const details = leaveDate
-            ? [{ leave_date: leaveDate }]
-            : []
-
-        mutation.mutate({
-            ...data,
-            details,
-        })
+    const onSubmit: SubmitHandler<LeaveRequestUpdate> = async (data) => {
+        mutation.mutate(data)
     }
+
+    const start = watch("start_date") as string | undefined
+    const end = watch("end_date") as string | undefined
+    const dateRangeInvalid = Boolean(start && end && start > end)
 
     return (
         <DialogRoot
@@ -160,10 +164,10 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
             <DialogContent>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Edit Leave Plan Request</DialogTitle>
+                        <DialogTitle>Edit Leave Request</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <Text mb={4}>Update the leave plan request details below.</Text>
+                        <Text mb={4}>Update the leave request details below.</Text>
                         <VStack gap={4}>
                             <Field
                                 required
@@ -175,7 +179,7 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                                     {...register("description", {
                                         required: "Description is required",
                                     })}
-                                    placeholder="Reason for leave request"
+                                    placeholder="Reason for leave"
                                     rows={3}
                                 />
                             </Field>
@@ -187,24 +191,46 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                                 label="Leave Type"
                             >
                                 <Select
+                                    placeholder={loadingLeaveTypes ? "Loading..." : "Select leave type"}
                                     {...register("leave_type_id", {
                                         required: "Leave Type is required",
                                     })}
-                                    options={leaveTypeOptions}
-                                    placeholder="Select a leave type..."
+                                    disabled={loadingLeaveTypes}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                        setValue("leave_type_id", e.target.value, { shouldValidate: true })
+                                    }
+                                    options={leaveTypes.map((t) => ({ value: t.id, label: t.name }))}
                                 />
                             </Field>
 
                             <Field
                                 required
-                                invalid={!leaveDate && isSubmitting}
-                                errorText={!leaveDate && isSubmitting ? "Leave date is required" : undefined}
-                                label="Leave Date"
+                                invalid={!!errors.start_date}
+                                errorText={errors.start_date?.message}
+                                label="Start Date"
                             >
                                 <Input
-                                    value={leaveDate}
-                                    onChange={(e) => setLeaveDate(e.target.value)}
-                                    placeholder="2025-10-25"
+                                    {...register("start_date", {
+                                        required: "Start date is required",
+                                    })}
+                                    type="date"
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.end_date || dateRangeInvalid}
+                                errorText={
+                                    dateRangeInvalid
+                                        ? "End date must be on or after start date"
+                                        : errors.end_date?.message
+                                }
+                                label="End Date"
+                            >
+                                <Input
+                                    {...register("end_date", {
+                                        required: "End date is required",
+                                    })}
                                     type="date"
                                 />
                             </Field>
@@ -213,15 +239,11 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
 
                     <DialogFooter gap={2}>
                         <DialogActionTrigger asChild>
-                            <Button
-                                variant="subtle"
-                                colorPalette="gray"
-                                disabled={isSubmitting}
-                            >
+                            <Button variant="subtle" colorPalette="gray" disabled={isSubmitting}>
                                 Cancel
                             </Button>
                         </DialogActionTrigger>
-                        <Button variant="solid" type="submit" loading={isSubmitting}>
+                        <Button variant="solid" type="submit" loading={isSubmitting} disabled={dateRangeInvalid}>
                             Save
                         </Button>
                     </DialogFooter>
@@ -232,4 +254,4 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
     )
 }
 
-export default EditLeavePlanRequest
+export default EditLeaveRequest

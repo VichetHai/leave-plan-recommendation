@@ -2,6 +2,8 @@ import uuid
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.leave_models.presentable_model import UserPresentable
+
 
 # Team
 # Shared properties
@@ -49,17 +51,12 @@ class Team(TeamBase, table=True):
 
 
 # Properties to return via API, id is always required
-class TeamMembers(SQLModel):
-    id: uuid.UUID
-    full_name: str
-    email: str
-
-
 class TeamPublic(TeamBase):
     id: uuid.UUID
     team_owner_id: uuid.UUID
-    owner_id: uuid.UUID
-    team_members: list[TeamMembers] = []
+
+    team_members: list[UserPresentable] = []
+    team_owner: UserPresentable | None
 
 
 class TeamsPublic(SQLModel):

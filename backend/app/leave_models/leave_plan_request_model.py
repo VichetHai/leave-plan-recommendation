@@ -3,6 +3,8 @@ from datetime import datetime, date
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.leave_models.presentable_model import UserPresentable, LeaveTypePresentable
+
 
 # Leave Plan Request Details
 # Shared properties
@@ -33,7 +35,6 @@ class LeavePlanDetail(LeavePlanDetailBase, table=True):
 # Public (for API responses)
 class LeavePlanDetailPublic(LeavePlanDetailBase):
     id: uuid.UUID
-    leave_plan_id: uuid.UUID
 
 
 # Public list wrapper
@@ -69,16 +70,18 @@ class LeavePlanRequest(LeavePlanRequestBase, table=True):
     team_id: uuid.UUID = Field(
         foreign_key="team.id", nullable=False, ondelete="CASCADE"
     )
+    year: str | None = Field(max_length=4, default_factory=lambda: str(date.today().year))
     leave_type_id: uuid.UUID = Field(
         foreign_key="leavetype.id", nullable=False, ondelete="CASCADE"
     )
     amount: float
     status: str = Field(max_length=50)
+    requested_at: datetime = Field(default_factory=datetime.now)
+    submitted_at: datetime | None = None
     approver_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
-    requested_at: datetime = Field(default_factory=datetime.utcnow)
-    approved_at: datetime | None = None
+    approval_at: datetime | None = None
 
     # Relationships
     owner: "User" = Relationship(
@@ -99,12 +102,17 @@ class LeavePlanRequestPublic(LeavePlanRequestBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     leave_type_id: uuid.UUID
-    approver_id: uuid.UUID | None
     requested_at: datetime
-    approved_at: datetime | None
+    submitted_at: datetime | None
+    approver_id: uuid.UUID | None
+    approval_at: datetime | None
     status: str
     amount: float
     details: list[LeavePlanDetailPublic] = []
+
+    owner: UserPresentable
+    leave_type: LeaveTypePresentable
+    approver: UserPresentable | None
 
 
 # Public list wrapper

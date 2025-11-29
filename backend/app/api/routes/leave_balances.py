@@ -13,6 +13,7 @@ from app.leave_models.leave_balance_model import (
     LeaveBalanceCreate,
     LeaveBalanceUpdate,
 )
+from app.leave_services import balance_service
 from app.models import Message
 
 router = APIRouter(prefix="/leave-balances", tags=["leave-balances"])
@@ -48,8 +49,15 @@ def retrieve_me(session: SessionDep, current_user: CurrentUser) -> Any:  # type:
     row_statement = select(LeaveBalance).where(
         LeaveBalance.owner_id == current_user.id, LeaveBalance.year == year
     )
-    row = session.exec(row_statement).one_or_none()
+    row = session.exec(row_statement).first()
     if not row:
+        # generate year balance
+        generated = balance_service.generate_balance(
+            session=session, owner_id=current_user.id
+        )
+        if generated:
+            return generated
+
         raise HTTPException(status_code=404, detail="Not found")
 
     return row

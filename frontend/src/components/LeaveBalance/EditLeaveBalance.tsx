@@ -1,12 +1,7 @@
-import {
-    Button,
-    DialogActionTrigger,
-    DialogRoot,
-    DialogTrigger,
-    Input,
-    Text,
-    VStack,
-} from "@chakra-ui/react"
+import { Button, Input, Text, VStack } from "@chakra-ui/react"
+import { useEffect } from "react"
+import LeaveTypesService from "@/client/LeaveTypesService"
+import { useUsers } from "@/hooks/useUsers"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -22,8 +17,12 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogRoot,
+    DialogTrigger,
+    DialogActionTrigger,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
 
 interface LeaveBalancePublic {
     id: string
@@ -78,6 +77,7 @@ const EditLeaveBalance = ({ leaveBalance }: EditLeaveBalanceProps) => {
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm<LeaveBalanceUpdate>({
         mode: "onChange",
@@ -89,6 +89,19 @@ const EditLeaveBalance = ({ leaveBalance }: EditLeaveBalanceProps) => {
             owner_id: leaveBalance.owner_id,
         },
     })
+
+    // Fetch leave types
+    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
+    const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(true)
+    useEffect(() => {
+        LeaveTypesService.readLeaveTypes({ limit: 100 }).then((res) => {
+            setLeaveTypes(res.data)
+            setLoadingLeaveTypes(false)
+        })
+    }, [])
+
+    // Fetch users
+    const { data: users = [], isLoading: loadingUsers } = useUsers()
 
     const mutation = useMutation({
         mutationFn: (data: LeaveBalanceUpdate) =>
@@ -167,14 +180,19 @@ const EditLeaveBalance = ({ leaveBalance }: EditLeaveBalanceProps) => {
                                 required
                                 invalid={!!errors.leave_type_id}
                                 errorText={errors.leave_type_id?.message}
-                                label="Leave Type ID"
+                                label="Leave Type"
                             >
-                                <Input
+                                <Select
+                                    placeholder={loadingLeaveTypes ? "Loading..." : "Select leave type"}
                                     {...register("leave_type_id", {
-                                        required: "Leave Type ID is required",
+                                        required: "Leave Type is required",
                                     })}
-                                    placeholder="Leave type UUID"
-                                    type="text"
+                                    disabled={loadingLeaveTypes}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue("leave_type_id", e.target.value, { shouldValidate: true })}
+                                    options={leaveTypes.map((type) => ({
+                                        value: type.id,
+                                        label: type.name,
+                                    }))}
                                 />
                             </Field>
 
@@ -182,14 +200,19 @@ const EditLeaveBalance = ({ leaveBalance }: EditLeaveBalanceProps) => {
                                 required
                                 invalid={!!errors.owner_id}
                                 errorText={errors.owner_id?.message}
-                                label="Owner ID"
+                                label="Owner"
                             >
-                                <Input
+                                <Select
+                                    placeholder={loadingUsers ? "Loading..." : "Select user"}
                                     {...register("owner_id", {
-                                        required: "Owner ID is required",
+                                        required: "Owner is required",
                                     })}
-                                    placeholder="User UUID"
-                                    type="text"
+                                    disabled={loadingUsers}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue("owner_id", e.target.value, { shouldValidate: true })}
+                                    options={users.map((user) => ({
+                                        value: user.id,
+                                        label: user.name,
+                                    }))}
                                 />
                             </Field>
                         </VStack>

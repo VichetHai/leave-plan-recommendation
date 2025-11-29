@@ -6,12 +6,15 @@ import {
     Text,
     Textarea,
     VStack,
+    IconButton,
+    Flex,
 } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FaPlus } from "react-icons/fa"
+import { FaPlus, FaTrash } from "react-icons/fa"
 import type { ApiError } from "@/client/core/ApiError"
+import LeaveTypesService from "@/client/LeaveTypesService"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
@@ -25,10 +28,14 @@ import {
     DialogTrigger,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
 
 interface LeavePlanRequestCreate {
     description: string
     leave_type_id: string
+}
+
+interface LeavePlanRequestPayload extends LeavePlanRequestCreate {
     details: Array<{ leave_date: string }>
 }
 
@@ -37,7 +44,7 @@ const LeavePlanRequestsService = {
     createLeavePlanRequest: async ({
         requestBody,
     }: {
-        requestBody: LeavePlanRequestCreate
+            requestBody: LeavePlanRequestPayload
     }) => {
         const baseUrl = OpenAPI.BASE || ""
         const token = localStorage.getItem("access_token") || ""
@@ -60,7 +67,22 @@ const AddLeavePlanRequest = () => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
-    const [leaveDate, setLeaveDate] = useState("")
+    const [leaveDates, setLeaveDates] = useState<string[]>([])
+    const [newDate, setNewDate] = useState("")
+
+    // Fetch leave types for dropdown
+    const { data: leaveTypesData } = useQuery({
+        queryKey: ["leave-types"],
+        queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
+    })
+
+    const leaveTypes = leaveTypesData?.data || []
+    const leaveTypeOptions = leaveTypes
+        .filter(lt => lt.is_active)
+        .map(lt => ({
+            value: lt.id,
+            label: lt.name,
+        }))
 
     const {
         register,
@@ -73,17 +95,32 @@ const AddLeavePlanRequest = () => {
         defaultValues: {
             description: "",
             leave_type_id: "",
-            details: [],
         },
     })
 
+    const handleAddDate = () => {
+        if (newDate && !leaveDates.includes(newDate)) {
+            setLeaveDates([...leaveDates, newDate])
+            setNewDate("")
+        }
+    }
+
+    const handleRemoveDate = (dateToRemove: string) => {
+        setLeaveDates(leaveDates.filter(date => date !== dateToRemove))
+    }
+
+    const handleReset = () => {
+        reset()
+        setLeaveDates([])
+        setNewDate("")
+    }
+
     const mutation = useMutation({
-        mutationFn: (data: LeavePlanRequestCreate) =>
+        mutationFn: (data: LeavePlanRequestPayload) =>
             LeavePlanRequestsService.createLeavePlanRequest({ requestBody: data }),
         onSuccess: () => {
             showSuccessToast("Leave plan request created successfully.")
-            reset()
-            setLeaveDate("")
+            handleReset()
             setIsOpen(false)
         },
         onError: (err: ApiError) => {
@@ -95,11 +132,8 @@ const AddLeavePlanRequest = () => {
     })
 
     const onSubmit: SubmitHandler<LeavePlanRequestCreate> = (data) => {
-        // Convert leave date string to details array
-        const details = leaveDate
-            ? [{ leave_date: leaveDate }]
-            : []
-
+        // Convert leaveDates array to details format
+        const details = leaveDates.map(date => ({ leave_date: date }))
         mutation.mutate({
             ...data,
             details,
@@ -114,8 +148,7 @@ const AddLeavePlanRequest = () => {
             onOpenChange={({ open }) => {
                 setIsOpen(open)
                 if (!open) {
-                    reset()
-                    setLeaveDate("")
+                    handleReset()
                 }
             }}
         >
@@ -154,29 +187,74 @@ const AddLeavePlanRequest = () => {
                                 required
                                 invalid={!!errors.leave_type_id}
                                 errorText={errors.leave_type_id?.message}
-                                label="Leave Type ID"
+                                label="Leave Type"
                             >
-                                <Input
+                                <Select
                                     {...register("leave_type_id", {
-                                        required: "Leave Type ID is required",
+                                        required: "Leave Type is required",
                                     })}
-                                    placeholder="Leave type UUID"
-                                    type="text"
+                                    options={leaveTypeOptions}
+                                    placeholder="Select a leave type..."
                                 />
                             </Field>
 
                             <Field
-                                required
-                                invalid={!leaveDate && isSubmitting}
-                                errorText={!leaveDate && isSubmitting ? "Leave date is required" : undefined}
-                                label="Leave Date"
+                                invalid={leaveDates.length === 0 && isSubmitting}
+                                errorText={leaveDates.length === 0 && isSubmitting ? "At least one leave date is required" : undefined}
+                                label="Leave Dates *"
                             >
-                                <Input
-                                    value={leaveDate}
-                                    onChange={(e) => setLeaveDate(e.target.value)}
-                                    placeholder="2025-10-25"
-                                    type="date"
-                                />
+                                <VStack gap={3} align="stretch">
+                                    {/* Input for adding new date */}
+                                    <Flex gap={2}>
+                                        <Input
+                                            value={newDate}
+                                            onChange={(e) => setNewDate(e.target.value)}
+                                            type="date"
+                                            placeholder="Select date"
+                                            flex={1}
+                                        />
+                                        <Button
+                                            size="md"
+                                            variant="outline"
+                                            onClick={handleAddDate}
+                                            disabled={!newDate}
+                                        >
+                                            <FaPlus fontSize="16px" /> Add Date
+                                        </Button>
+                                    </Flex>
+
+                                    {/* List of added dates */}
+                                    {leaveDates.length > 0 && (
+                                        <VStack gap={2} align="stretch">
+                                            {leaveDates.map((date, idx) => (
+                                                <Flex
+                                                    key={idx}
+                                                    align="center"
+                                                    gap={2}
+                                                    p={2}
+                                                    borderWidth="1px"
+                                                    borderRadius="md"
+                                                    bg="gray.50"
+                                                >
+                                                    <Text flex={1}>
+                                                        {new Date(date).toLocaleDateString("en-GB", {
+                                                            day: "2-digit",
+                                                            month: "2-digit",
+                                                            year: "numeric"
+                                                        })}
+                                                    </Text>
+                                                    <IconButton
+                                                        aria-label="Remove date"
+                                                        children={<FaTrash fontSize="16px" />}
+                                                        size="sm"
+                                                        colorPalette="red"
+                                                        onClick={() => handleRemoveDate(date)}
+                                                    />
+                                                </Flex>
+                                            ))}
+                                        </VStack>
+                                    )}
+                                </VStack>
                             </Field>
                         </VStack>
                     </DialogBody>
@@ -194,7 +272,7 @@ const AddLeavePlanRequest = () => {
                         <Button
                             variant="solid"
                             type="submit"
-                            disabled={!isValid || !leaveDate}
+                            disabled={!isValid || leaveDates.length === 0}
                             loading={isSubmitting}
                         >
                             Save

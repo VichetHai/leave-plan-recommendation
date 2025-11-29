@@ -35,6 +35,9 @@ class LeaveType(LeaveTypeBase, table=True):
     leave_plan_requests: list["LeavePlanRequest"] = Relationship(
         back_populates="leave_type"
     )
+    leave_balances: list["LeaveBalance"] = Relationship(
+        back_populates="leave_type"
+    )
 
 
 # Properties to return via API, id is always required

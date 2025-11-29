@@ -6,21 +6,20 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select, or_
 
 from app.api.deps import CurrentUser, SessionDep
-from app.leave_models.leave_plan_request_model import (
-    LeavePlanRequest,
-    LeavePlanRequestCreate,
-    LeavePlanRequestPublic,
-    LeavePlanRequestsPublic,
-    LeavePlanRequestUpdate,
-    LeavePlanDetail,
+from app.leave_models.leave_request_model import (
+    LeaveRequest,
+    LeaveRequestCreate,
+    LeaveRequestPublic,
+    LeaveRequestsPublic,
+    LeaveRequestUpdate,
 )
 from app.leave_services import approval_service
 from app.models import Message
 
-router = APIRouter(prefix="/leave-plan-requests", tags=["leave-plan-requests"])
+router = APIRouter(prefix="/leave-requests", tags=["leave-requests"])
 
 
-@router.get("/", response_model=LeavePlanRequestsPublic)
+@router.get("/", response_model=LeaveRequestsPublic)
 def list(
     session: SessionDep,
     current_user: CurrentUser,
@@ -32,28 +31,28 @@ def list(
     """
 
     if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(LeavePlanRequest)
+        count_statement = select(func.count()).select_from(LeaveRequest)
         count = session.exec(count_statement).one()
-        statement = select(LeavePlanRequest).offset(skip).limit(limit)
+        statement = select(LeaveRequest).offset(skip).limit(limit)
         rows = session.exec(statement).all()
     else:
         count_statement = (
             select(func.count())
-            .select_from(LeavePlanRequest)
+            .select_from(LeaveRequest)
             .where(
                 or_(
-                    LeavePlanRequest.owner_id == current_user.id,
-                    LeavePlanRequest.approver_id == current_user.id,
+                    LeaveRequest.owner_id == current_user.id,
+                    LeaveRequest.approver_id == current_user.id,
                 )
             )
         )
         count = session.exec(count_statement).one()
         statement = (
-            select(LeavePlanRequest)
+            select(LeaveRequest)
             .where(
                 or_(
-                    LeavePlanRequest.owner_id == current_user.id,
-                    LeavePlanRequest.approver_id == current_user.id,
+                    LeaveRequest.owner_id == current_user.id,
+                    LeaveRequest.approver_id == current_user.id,
                 )
             )
             .offset(skip)
@@ -61,28 +60,28 @@ def list(
         )
         rows = session.exec(statement).all()
 
-    return LeavePlanRequestsPublic(data=rows, count=count)
+    return LeaveRequestsPublic(data=rows, count=count)
 
 
-@router.get("/{id}", response_model=LeavePlanRequestPublic)
+@router.get("/{id}", response_model=LeaveRequestPublic)
 def retrieve(session: SessionDep, id: uuid.UUID) -> Any:  # type: ignore
     """
     Get item by ID.
     """
 
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
     return row
 
 
-@router.post("/", response_model=LeavePlanRequestPublic)
+@router.post("/", response_model=LeaveRequestPublic)
 def create(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    row_in: LeavePlanRequestCreate,
+    row_in: LeaveRequestCreate,
 ) -> Any:
     """
     Create new item.
@@ -90,31 +89,19 @@ def create(
 
     requested_at = datetime.now()
     status = "draft"
-    details = row_in.details
+    amount = 1
 
-    dates = [d.leave_date for d in details]
-    if len(dates) != len(set(dates)):
-        raise HTTPException(
-            status_code=422, detail="Duplicate leave dates are not allowed in details"
-        )
-
-    row_data = row_in.model_dump(exclude={"details"})
-    row = LeavePlanRequest.model_validate(
+    row_data = row_in.model_dump()
+    row = LeaveRequest.model_validate(
         row_data,
         update={
             "owner_id": current_user.id,
             "team_id": current_user.team_id,
             "requested_at": requested_at,
             "status": status,
-            "amount": len(dates),
+            "amount": amount,
         },
     )
-
-    # Convert each detail
-    row.details = [
-        LeavePlanDetail(**detail.model_dump(), leave_plan_id=row.id)
-        for detail in details
-    ]
 
     session.add(row)
     session.commit()
@@ -122,27 +109,21 @@ def create(
     return row
 
 
-@router.put("/{id}", response_model=LeavePlanRequestPublic)
+@router.put("/{id}", response_model=LeaveRequestPublic)
 def update(
     *,
     session: SessionDep,  # type: ignore
     current_user: CurrentUser,
     id: uuid.UUID,
-    row_in: LeavePlanRequestUpdate,
+    row_in: LeaveRequestUpdate,
 ) -> Any:
     """
     Update an item.
     """
 
-    details = row_in.details
+    amount = 1
 
-    dates = [d.leave_date for d in details]
-    if len(dates) != len(set(dates)):
-        raise HTTPException(
-            status_code=422, detail="Duplicate leave dates are not allowed in details"
-        )
-
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -151,18 +132,8 @@ def update(
             status_code=403, detail="Not enough permissions to update item"
         )
 
-    row_data = row_in.model_dump(exclude_unset=True, exclude={"details"})
-    row.sqlmodel_update(row_data, update={"amount": len(dates)})
-
-    # Reinsert details
-    # Remove old details
-    for detail in row.details:
-        session.delete(detail)
-    # Add new details
-    row.details = [
-        LeavePlanDetail(**detail.model_dump(), leave_plan_id=row.id)
-        for detail in details
-    ]
+    row_data = row_in.model_dump(exclude_unset=True)
+    row.sqlmodel_update(row_data, update={"amount": amount})
 
     session.add(row)
     session.commit()
@@ -180,7 +151,7 @@ def delete(
     Delete an item.
     """
 
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -189,16 +160,12 @@ def delete(
             status_code=403, detail="Not enough permission to delete this item"
         )
 
-    # Remove old details
-    for detail in row.details:
-        session.delete(detail)
-
     session.delete(row)
     session.commit()
     return Message(message="Deleted successfully")
 
 
-@router.put("/{id}/submit", response_model=LeavePlanRequestPublic)
+@router.put("/{id}/submit", response_model=LeaveRequestPublic)
 def submit(
     *,
     session: SessionDep,  # type: ignore
@@ -209,7 +176,7 @@ def submit(
     Submit an item.
     """
 
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -228,7 +195,7 @@ def submit(
     return row
 
 
-@router.put("/{id}/approve", response_model=LeavePlanRequestPublic)
+@router.put("/{id}/approve", response_model=LeaveRequestPublic)
 def approve(
     *,
     session: SessionDep,  # type: ignore
@@ -239,7 +206,7 @@ def approve(
     Approve an item.
     """
 
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -255,7 +222,7 @@ def approve(
     return row
 
 
-@router.put("/{id}/reject", response_model=LeavePlanRequestPublic)
+@router.put("/{id}/reject", response_model=LeaveRequestPublic)
 def reject(
     *,
     session: SessionDep,  # type: ignore
@@ -266,7 +233,7 @@ def reject(
     Reject an item.
     """
 
-    row = session.get(LeavePlanRequest, id)
+    row = session.get(LeaveRequest, id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
 
