@@ -175,7 +175,6 @@ class NewPassword(SQLModel):
 
 
 class LeaveRecommendation(SQLModel):
-    leave_type_id: uuid.UUID
     leave_date: date
     bridge_holiday: bool
     team_workload: int
@@ -183,4 +182,6 @@ class LeaveRecommendation(SQLModel):
     predicted_score: float
 
 class LeaveRecommendations(SQLModel):
+    leave_type_id: uuid.UUID
+    year: int
     data: list[LeaveRecommendation]

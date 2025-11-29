@@ -49,10 +49,14 @@ class RecommendLeavePlanRouter:
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
         recommendations = self.recommend_leave_days(data, leave_entitlement=leave_entitlement)
-        response_list = self.format_recommendations_for_response(recommendations, leave_type_id)
+        response_list = self.format_recommendations_for_response(recommendations)
         
-        return LeaveRecommendations(data=response_list)
-        
+        return LeaveRecommendations(
+            data=response_list, 
+            leave_type_id=leave_type_id, 
+            year=self.year
+        )
+    
     # ---------------------------
     # Helper methods
     # ---------------------------
@@ -79,18 +83,14 @@ class RecommendLeavePlanRouter:
         
         return leave_type.id, available_balance
 
-    def format_recommendations_for_response(self, recommendations, leave_type_id):
+    def format_recommendations_for_response(self, recommendations):
         """
         Convert a DataFrame of recommended leave days to a list of dicts
         matching the Pydantic response model.
         """
-        # Add leave_type_id if it doesn't exist yet
-        if "leave_type_id" not in recommendations.columns:
-            recommendations = recommendations.copy()
-            recommendations["leave_type_id"] = leave_type_id
-            
+
         # Select only relevant columns
-        response_df = recommendations[["leave_type_id", "date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
+        response_df = recommendations[["date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
 
         # Rename columns to match Pydantic model
         response_df = response_df.rename(columns={"date": "leave_date"})
