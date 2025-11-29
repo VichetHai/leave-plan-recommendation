@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
 from typing import Any
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
@@ -11,6 +11,8 @@ from app.models import User
 from app.leave_models.leave_policy_model import Policy
 from app.leave_models.public_holiday_model import PublicHoliday
 from app.leave_models.leave_plan_request_model import LeavePlanDetail, LeavePlanRequest
+from app.leave_models.leave_type_model import LeaveType
+from app.leave_models.leave_balance_model import LeaveBalance
 from sqlmodel import select, func
 from datetime import datetime
 
@@ -43,10 +45,10 @@ class RecommendLeavePlanRouter:
         """
         self.year = year
         self.current_user = current_user
-
+        leave_entitlement = self.get_leave_type_with_balance()
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
-        recommendations = self.recommend_leave_days(data, leave_entitlement=18)
+        recommendations = self.recommend_leave_days(data, leave_entitlement=leave_entitlement)
         response_list = self.format_recommendations_for_response(recommendations)
         
         return LeaveRecommendations(data=response_list)
@@ -54,6 +56,29 @@ class RecommendLeavePlanRouter:
     # ---------------------------
     # Helper methods
     # ---------------------------
+
+    def get_leave_type_with_balance(self, session):
+        # TODO:: add where LeaveType.allow_leave_plan == True
+        statement = select(LeaveType)
+        leave_type = session.exec(statement).first()
+
+        if not leave_type:
+            raise HTTPException(status_code=404, detail="No leave type found that is allowed for leave planning.")
+        
+        # Query LeaveBalance 
+        # TODO:: LeaveBalance should have year.
+        balance_statement = select(LeaveBalance).where(
+            (LeaveBalance.leave_type_id == leave_type.id) &
+            (LeaveBalance.owner_id == self.current_user.id)
+        )
+        leave_balance = session.exec(balance_statement).first()
+        available_balance = leave_balance.available_balance if leave_balance else 0
+        
+        if available_balance == 0:
+            raise HTTPException(status_code=404, detail="No remaining leave balance available to create a leave plan.")
+        
+        return available_balance
+
     def format_recommendations_for_response(self, recommendations):
         """
         Convert a DataFrame of recommended leave days to a list of dicts
@@ -195,7 +220,6 @@ class RecommendLeavePlanRouter:
         return model, data
 
     def recommend_leave_days(self, data, leave_entitlement=18):
-        # TODO:: get leave_entitlement from leave_balance
         selected_days = []
         sorted_data = data.sort_values("predicted_score", ascending=False)
         for _, row in sorted_data.iterrows():
