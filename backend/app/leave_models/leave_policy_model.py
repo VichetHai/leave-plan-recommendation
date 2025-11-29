@@ -5,7 +5,7 @@ from sqlmodel import Field, Relationship, SQLModel
 # Policy
 # Shared properties
 class PolicyBase(SQLModel):
-    code: str = Field(index=True, max_length=255)
+    code: str = Field(index=True, max_length=255) # support code (weekday, team_workload, bridge_holiday)
     name: str = Field(default="Untitled", max_length=255)
     operation: str | None = Field(default="==", max_length=10)  # comparison operator (in, >, <, >=, <=, "==")
     value: str = Field(max_length=255)
