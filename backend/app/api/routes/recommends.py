@@ -45,11 +45,11 @@ class RecommendLeavePlanRouter:
         """
         self.year = year
         self.current_user = current_user
-        leave_entitlement = self.get_leave_type_with_balance()
+        leave_type_id, leave_entitlement = self.get_leave_type_with_balance()
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
         recommendations = self.recommend_leave_days(data, leave_entitlement=leave_entitlement)
-        response_list = self.format_recommendations_for_response(recommendations)
+        response_list = self.format_recommendations_for_response(recommendations, leave_type_id)
         
         return LeaveRecommendations(data=response_list)
         
@@ -59,17 +59,17 @@ class RecommendLeavePlanRouter:
 
     def get_leave_type_with_balance(self, session):
         # TODO:: add where LeaveType.allow_leave_plan == True
-        statement = select(LeaveType)
+        statement = select(LeaveType).where(LeaveType.is_active == True)
         leave_type = session.exec(statement).first()
 
         if not leave_type:
             raise HTTPException(status_code=404, detail="No leave type found that is allowed for leave planning.")
         
         # Query LeaveBalance 
-        # TODO:: LeaveBalance should have year.
         balance_statement = select(LeaveBalance).where(
             (LeaveBalance.leave_type_id == leave_type.id) &
-            (LeaveBalance.owner_id == self.current_user.id)
+            (LeaveBalance.owner_id == self.current_user.id) &
+            (LeaveBalance.year == self.year)
         )
         leave_balance = session.exec(balance_statement).first()
         available_balance = leave_balance.available_balance if leave_balance else 0
@@ -77,15 +77,20 @@ class RecommendLeavePlanRouter:
         if available_balance == 0:
             raise HTTPException(status_code=404, detail="No remaining leave balance available to create a leave plan.")
         
-        return available_balance
+        return leave_type.id, available_balance
 
-    def format_recommendations_for_response(self, recommendations):
+    def format_recommendations_for_response(self, recommendations, leave_type_id):
         """
         Convert a DataFrame of recommended leave days to a list of dicts
         matching the Pydantic response model.
         """
+        # Add leave_type_id if it doesn't exist yet
+        if "leave_type_id" not in recommendations.columns:
+            recommendations = recommendations.copy()
+            recommendations["leave_type_id"] = leave_type_id
+            
         # Select only relevant columns
-        response_df = recommendations[["date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
+        response_df = recommendations[["leave_type_id", "date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
 
         # Rename columns to match Pydantic model
         response_df = response_df.rename(columns={"date": "leave_date"})
@@ -130,7 +135,8 @@ class RecommendLeavePlanRouter:
             LeavePlanRequest,
             LeavePlanDetail.leave_plan_id == LeavePlanRequest.id
         ).where(
-            LeavePlanRequest.team_id == self.current_user.team_id
+            (LeavePlanRequest.team_id == self.current_user.team_id) &
+            (LeavePlanRequest.year == self.year)  # filter by year
         ).group_by(
             LeavePlanDetail.leave_date
         ).order_by(

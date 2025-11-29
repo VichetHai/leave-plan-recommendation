@@ -175,6 +175,7 @@ class NewPassword(SQLModel):
 
 
 class LeaveRecommendation(SQLModel):
+    leave_type_id: uuid.UUID
     leave_date: date
     bridge_holiday: bool
     team_workload: int
