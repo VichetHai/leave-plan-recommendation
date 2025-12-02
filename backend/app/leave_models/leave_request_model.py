@@ -67,6 +67,7 @@ class LeaveRequestPublic(LeaveRequestBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     leave_type_id: uuid.UUID
+    amount: float
     status: str
     requested_at: datetime
     submitted_at: datetime | None

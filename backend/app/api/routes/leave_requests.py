@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from app.leave_services.leave_service import LeaveService
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select, or_
 
@@ -86,10 +87,18 @@ def create(
     """
     Create new item.
     """
+    
+    service = LeaveService(session=session, owner_id=current_user.id)
+    amount = service.calculate_leave_days(row_in)
+
+    if not amount:
+        raise HTTPException(status_code=400, detail="Invalid start and end dates.")
+
+    if not service.has_available_balance(leave_type_id=row_in.leave_type_id, requested_days=amount):
+        raise HTTPException(status_code=400, detail="Insufficient leave balance.")
 
     requested_at = datetime.now()
     status = "draft"
-    amount = 1
 
     row_data = row_in.model_dump()
     row = LeaveRequest.model_validate(
@@ -121,7 +130,14 @@ def update(
     Update an item.
     """
 
-    amount = 1
+    service = LeaveService(session=session, owner_id=current_user.id)
+    amount = service.calculate_leave_days(row_in)
+
+    if not amount:
+        raise HTTPException(status_code=400, detail="Invalid start and end dates.")
+
+    if not service.has_available_balance(leave_type_id=row_in.leave_type_id, requested_days=amount):
+        raise HTTPException(status_code=400, detail="Insufficient leave balance.")
 
     row = session.get(LeaveRequest, id)
     if not row:
