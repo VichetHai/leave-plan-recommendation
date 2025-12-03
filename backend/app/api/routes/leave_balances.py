@@ -13,7 +13,8 @@ from app.leave_models.leave_balance_model import (
     LeaveBalanceCreate,
     LeaveBalanceUpdate,
 )
-from app.leave_services import balance_service
+from app.leave_services.balance_service import BalanceService
+
 from app.models import Message
 
 router = APIRouter(prefix="/leave-balances", tags=["leave-balances"])
@@ -38,7 +39,7 @@ def list(
     return LeaveBalancesPublic(data=rows, count=count)
 
 
-@router.get("/me", response_model=LeaveBalancePublic)
+@router.get("/me", response_model=LeaveBalancesPublic)
 def retrieve_me(session: SessionDep, current_user: CurrentUser) -> Any:  # type: ignore
     """
     Get item by ID.
@@ -46,21 +47,16 @@ def retrieve_me(session: SessionDep, current_user: CurrentUser) -> Any:  # type:
 
     year = datetime.now().year
 
+    service_balance = BalanceService(session=session, owner_id=current_user.id)
+    service_balance.generate_balance(year=str(year))
+
     row_statement = select(LeaveBalance).where(
         LeaveBalance.owner_id == current_user.id, LeaveBalance.year == year
     )
-    row = session.exec(row_statement).first()
-    if not row:
-        # generate year balance
-        generated = balance_service.generate_balance(
-            session=session, owner_id=current_user.id
-        )
-        if generated:
-            return generated
+    rows = session.exec(row_statement).all()
+    count = len(rows)
 
-        raise HTTPException(status_code=404, detail="Not found")
-
-    return row
+    return LeaveBalancesPublic(data=rows, count=count)
 
 
 @router.get("/{id}", response_model=LeaveBalancePublic)

@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 from app.leave_models.leave_balance_model import LeaveBalance
 
+
 class LeaveService:
     def __init__(self, session: Session, owner_id: uuid.UUID):
         self.session = session
@@ -13,32 +14,9 @@ class LeaveService:
 
     def _require_context(self) -> None:
         if self.session is None or self.owner_id is None:
-            raise ValueError("Session and owner_id are required for balance operations.")
-
-    def get_leave_total(
-        self, *, leave_type_id: uuid.UUID | None = None, year: str | None = None
-    ) -> Dict[str, float]:
-        """Return total, used, and available days for the configured user."""
-        self._require_context()
-        year = year or str(date.today().year)
-
-        statement = select(LeaveBalance).where(
-            LeaveBalance.owner_id == self.owner_id,
-            LeaveBalance.year == year,
-        )
-        if leave_type_id:
-            statement = statement.where(LeaveBalance.leave_type_id == leave_type_id)
-
-        leave_balance = self.session.exec(statement).first()
-
-        if leave_balance:
-            return {
-                "total_leave_days": float(leave_balance.balance),
-                "used_leave_days": float(leave_balance.taken_balance),
-                "available_balance": float(leave_balance.available_balance),
-            }
-
-        return {"total_leave_days": 0.0, "used_leave_days": 0.0, "available_balance": 0.0}
+            raise ValueError(
+                "Session and owner_id are required for balance operations."
+            )
 
     def has_available_balance(
         self,

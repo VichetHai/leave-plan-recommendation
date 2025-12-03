@@ -2,10 +2,6 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from app.leave_services.leave_service import LeaveService
-from fastapi import APIRouter, HTTPException
-from sqlmodel import func, select, or_
-
 from app.api.deps import CurrentUser, SessionDep
 from app.leave_models.leave_request_model import (
     LeaveRequest,
@@ -15,7 +11,11 @@ from app.leave_models.leave_request_model import (
     LeaveRequestUpdate,
 )
 from app.leave_services import approval_service
+from app.leave_services.balance_service import BalanceService
+from app.leave_services.leave_service import LeaveService
 from app.models import Message
+from fastapi import APIRouter, HTTPException
+from sqlmodel import func, or_, select
 
 router = APIRouter(prefix="/leave-requests", tags=["leave-requests"])
 
@@ -87,14 +87,16 @@ def create(
     """
     Create new item.
     """
-    
+
     service = LeaveService(session=session, owner_id=current_user.id)
     amount = service.calculate_leave_days(row_in)
 
     if not amount:
         raise HTTPException(status_code=400, detail="Invalid start and end dates.")
 
-    if not service.has_available_balance(leave_type_id=row_in.leave_type_id, requested_days=amount):
+    if not service.has_available_balance(
+        leave_type_id=row_in.leave_type_id, requested_days=amount
+    ):
         raise HTTPException(status_code=400, detail="Insufficient leave balance.")
 
     requested_at = datetime.now()
@@ -136,7 +138,9 @@ def update(
     if not amount:
         raise HTTPException(status_code=400, detail="Invalid start and end dates.")
 
-    if not service.has_available_balance(leave_type_id=row_in.leave_type_id, requested_days=amount):
+    if not service.has_available_balance(
+        leave_type_id=row_in.leave_type_id, requested_days=amount
+    ):
         raise HTTPException(status_code=400, detail="Insufficient leave balance.")
 
     row = session.get(LeaveRequest, id)
@@ -205,6 +209,18 @@ def submit(
     row.approver_id = approver.id
     row.submitted_at = datetime.now()
 
+    service = LeaveService(session=session, owner_id=current_user.id)
+    if not service.has_available_balance(
+        leave_type_id=row.leave_type_id, requested_days=row.amount, year=row.year
+    ):
+        raise HTTPException(status_code=400, detail="Insufficient leave balance.")
+
+    # Debit the leave balance
+    service_balance = BalanceService(session=session, owner_id=current_user.id)
+    service_balance.debit_balance(
+        owner_id=row.owner_id, amount=row.amount, leave_type_id=row.leave_type_id
+    )
+
     session.add(row)
     session.commit()
     session.refresh(row)
@@ -258,6 +274,12 @@ def reject(
 
     row.status = "rejected"
     row.approval_at = datetime.now()
+
+    # Credit the leave balance
+    service_balance = BalanceService(session=session, owner_id=current_user.id)
+    service_balance.credit_balance(
+        owner_id=row.owner_id, amount=row.amount, leave_type_id=row.leave_type_id
+    )
 
     session.add(row)
     session.commit()
