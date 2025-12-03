@@ -182,4 +182,6 @@ class LeaveRecommendation(SQLModel):
     predicted_score: float
 
 class LeaveRecommendations(SQLModel):
+    leave_type_id: uuid.UUID
+    year: int
     data: list[LeaveRecommendation]

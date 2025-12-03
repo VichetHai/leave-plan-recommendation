@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
 from typing import Any
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import LeaveRecommendations
@@ -11,6 +11,8 @@ from app.models import User
 from app.leave_models.leave_policy_model import Policy
 from app.leave_models.public_holiday_model import PublicHoliday
 from app.leave_models.leave_plan_request_model import LeavePlanDetail, LeavePlanRequest
+from app.leave_models.leave_type_model import LeaveType
+from app.leave_models.leave_balance_model import LeaveBalance
 from sqlmodel import select, func
 from datetime import datetime
 
@@ -43,22 +45,50 @@ class RecommendLeavePlanRouter:
         """
         self.year = year
         self.current_user = current_user
-
+        leave_type_id, leave_entitlement = self.get_leave_type_with_balance()
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
-        recommendations = self.recommend_leave_days(data, N=18)
+        recommendations = self.recommend_leave_days(data, leave_entitlement=leave_entitlement)
         response_list = self.format_recommendations_for_response(recommendations)
         
-        return LeaveRecommendations(data=response_list)
-        
+        return LeaveRecommendations(
+            data=response_list, 
+            leave_type_id=leave_type_id, 
+            year=self.year
+        )
+    
     # ---------------------------
     # Helper methods
     # ---------------------------
+
+    def get_leave_type_with_balance(self, session):
+        # TODO:: add where LeaveType.allow_leave_plan == True
+        statement = select(LeaveType).where(LeaveType.is_active == True)
+        leave_type = session.exec(statement).first()
+
+        if not leave_type:
+            raise HTTPException(status_code=404, detail="No leave type found that is allowed for leave planning.")
+        
+        # Query LeaveBalance 
+        balance_statement = select(LeaveBalance).where(
+            (LeaveBalance.leave_type_id == leave_type.id) &
+            (LeaveBalance.owner_id == self.current_user.id) &
+            (LeaveBalance.year == self.year)
+        )
+        leave_balance = session.exec(balance_statement).first()
+        available_balance = leave_balance.available_balance if leave_balance else 0
+        
+        if available_balance == 0:
+            raise HTTPException(status_code=404, detail="No remaining leave balance available to create a leave plan.")
+        
+        return leave_type.id, available_balance
+
     def format_recommendations_for_response(self, recommendations):
         """
         Convert a DataFrame of recommended leave days to a list of dicts
         matching the Pydantic response model.
         """
+
         # Select only relevant columns
         response_df = recommendations[["date", "bridge_holiday", "team_workload", "preference_score", "predicted_score"]]
 
@@ -105,7 +135,8 @@ class RecommendLeavePlanRouter:
             LeavePlanRequest,
             LeavePlanDetail.leave_plan_id == LeavePlanRequest.id
         ).where(
-            LeavePlanRequest.team_id == self.current_user.team_id
+            (LeavePlanRequest.team_id == self.current_user.team_id) &
+            (LeavePlanRequest.year == self.year)  # filter by year
         ).group_by(
             LeavePlanDetail.leave_date
         ).order_by(
@@ -194,15 +225,13 @@ class RecommendLeavePlanRouter:
         data["predicted_score"] = model.predict(X)
         return model, data
 
-    def recommend_leave_days(self, data, N=18, min_gap=2, max_workload=4):
+    def recommend_leave_days(self, data, leave_entitlement=18):
         selected_days = []
         sorted_data = data.sort_values("predicted_score", ascending=False)
         for _, row in sorted_data.iterrows():
-            if all(abs(row.day_of_year - d) > min_gap for d in selected_days):
-                if row.team_workload <= max_workload:
-                    selected_days.append(row.day_of_year)
-                    if len(selected_days) == N:
-                        break
+            selected_days.append(row.day_of_year)
+            if len(selected_days) == leave_entitlement:
+                break
         recommendations = data[data.day_of_year.isin(selected_days)].sort_values("day_of_year")
         return recommendations
 
