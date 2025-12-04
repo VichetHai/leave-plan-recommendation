@@ -10,6 +10,7 @@ class LeaveTypeBase(SQLModel):
     name: str = Field(default="Untitled", max_length=255)
     entitlement: int = Field(default=0)
     description: str | None = Field(default=None, max_length=255)
+    is_allow_plan: bool = True
     is_active: bool = True
 
 
