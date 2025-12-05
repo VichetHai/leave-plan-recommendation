@@ -1,4 +1,4 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Popover, Portal, Table, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -121,9 +121,11 @@ function LeaveBalancesTable() {
             <Table.Root size={{ base: "sm", md: "md" }}>
                 <Table.Header>
                     <Table.Row>
+                        <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Year</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Owner</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Owner Name</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Owner Email</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Balance</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Taken</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Available</Table.ColumnHeader>
@@ -133,12 +135,35 @@ function LeaveBalancesTable() {
                 <Table.Body>
                     {leaveBalances?.map((leaveBalance) => (
                         <Table.Row key={leaveBalance.id} opacity={isPlaceholderData ? 0.5 : 1}>
+                            <Table.Cell truncate maxW="sm">{leaveBalance.id}</Table.Cell>
                             <Table.Cell>{leaveBalance.year}</Table.Cell>
                             <Table.Cell truncate maxW="sm">
                                 {leaveBalance.leave_type?.name || leaveBalance.leave_type_id}
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {leaveBalance.owner?.full_name || leaveBalance.owner_id}
+                                <Popover.Root>
+                                    <Popover.Trigger asChild>
+                                        <Text as="span" cursor="pointer" _hover={{ textDecoration: "underline" }}>
+                                            {leaveBalance.owner?.full_name || leaveBalance.owner_id}
+                                        </Text>
+                                    </Popover.Trigger>
+                                    <Portal>
+                                        <Popover.Positioner>
+                                            <Popover.Content>
+                                                <Popover.Arrow>
+                                                    <Popover.ArrowTip />
+                                                </Popover.Arrow>
+                                                <Popover.Body>
+                                                    <Text fontWeight="bold">Owner ID:</Text>
+                                                    <Text>{leaveBalance.owner_id}</Text>
+                                                </Popover.Body>
+                                            </Popover.Content>
+                                        </Popover.Positioner>
+                                    </Portal>
+                                </Popover.Root>
+                            </Table.Cell>
+                            <Table.Cell truncate maxW="sm">
+                                {leaveBalance.owner?.email || "-"}
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette="blue">
