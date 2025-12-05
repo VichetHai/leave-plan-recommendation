@@ -6,6 +6,7 @@ import { OpenAPI } from "@/client/core/OpenAPI"
 import AddPublicHoliday from "@/components/PublicHoliday/AddPublicHoliday"
 import { PublicHolidayActionsMenu } from "@/components/Common/PublicHolidayActionsMenu"
 import PendingPublicHolidays from "@/components/Pending/PendingPublicHolidays"
+import useAuth from "@/hooks/useAuth"
 import {
     PaginationItems,
     PaginationNextTrigger,
@@ -75,7 +76,7 @@ export const Route = createFileRoute("/_layout/public-holidays")({
     validateSearch: (search) => publicHolidaysSearchSchema.parse(search),
 })
 
-function PublicHolidaysTable() {
+function PublicHolidaysTable({ isSuperuser }: { isSuperuser: boolean }) {
     const navigate = useNavigate({ from: Route.fullPath })
     const { page } = Route.useSearch()
 
@@ -103,25 +104,27 @@ function PublicHolidaysTable() {
             <Table.Root size={{ base: "sm", md: "md" }}>
                 <Table.Header>
                     <Table.Row>
-                        <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
+                        {isSuperuser && <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>}
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Date</Table.ColumnHeader>
                         <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
+                        {isSuperuser && <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>}
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
                     {publicHolidays?.map((publicHoliday) => (
                         <Table.Row key={publicHoliday.id} opacity={isPlaceholderData ? 0.5 : 1}>
-                            <Table.Cell>{publicHoliday.id}</Table.Cell>
+                            {isSuperuser && <Table.Cell>{publicHoliday.id}</Table.Cell>}
                             <Table.Cell>{publicHoliday.name}</Table.Cell>
                             <Table.Cell>{publicHoliday.date}</Table.Cell>
                             <Table.Cell truncate maxW="md">
                                 {publicHoliday.description}
                             </Table.Cell>
-                            <Table.Cell>
-                                <PublicHolidayActionsMenu publicHoliday={publicHoliday} />
-                            </Table.Cell>
+                            {isSuperuser && (
+                                <Table.Cell>
+                                    <PublicHolidayActionsMenu publicHoliday={publicHoliday} />
+                                </Table.Cell>
+                            )}
                         </Table.Row>
                     ))}
                 </Table.Body>
@@ -144,14 +147,17 @@ function PublicHolidaysTable() {
 }
 
 function PublicHolidays() {
+    const { user } = useAuth()
+    const isSuperuser = user?.is_superuser ?? false
+
     return (
         <Container maxW="full">
             <Heading size="lg" pt={12}>
                 Public Holidays Management
             </Heading>
 
-            <AddPublicHoliday />
-            <PublicHolidaysTable />
+            {isSuperuser && <AddPublicHoliday />}
+            <PublicHolidaysTable isSuperuser={isSuperuser} />
         </Container>
     )
 }

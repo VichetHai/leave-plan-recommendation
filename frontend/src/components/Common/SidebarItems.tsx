@@ -11,10 +11,10 @@ import type { UserPublic } from "@/client"
 const userItems = [
   { icon: FiHome, title: "Dashboard", path: "/" },
   { icon: FiCalendar, title: "Public Holidays", path: "/public-holidays" },
-  { icon: FiSettings, title: "User Settings", path: "/settings" },
   { icon: FiSend, title: "Leave Plan Requests", path: "/leave-plan-requests" },
   { icon: FiSend, title: "Leave Requests", path: "/leave-requests" },
   { icon: FiTrendingUp, title: "Recommendations", path: "/recommendations" },
+  { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]
 
 // Additional menu items for superusers (admin privilege)
