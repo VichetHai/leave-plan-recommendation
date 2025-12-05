@@ -86,122 +86,6 @@ const leaveRequestsSearchSchema = z.object({
 
 const PER_PAGE = 10
 
-// Sample data for demonstration when no records exist
-const sampleLeaveRequests: LeaveRequestPublic[] = [
-    {
-        id: "sample-1",
-        start_date: "2025-12-10",
-        end_date: "2025-12-12",
-        description: "Family vacation to the beach",
-        leave_type_id: "lt-1",
-        owner_id: "user-1",
-        approver_id: "approver-1",
-        requested_at: "2025-12-01T09:00:00.000Z",
-        submitted_at: "2025-12-01T09:30:00.000Z",
-        approval_at: "2025-12-02T10:00:00.000Z",
-        status: "approved",
-        full_name: "John Smith",
-        leave_type: { id: "lt-1", name: "Annual Leave", code: "AL" },
-        approver: [{ id: "approver-1", name: "Sarah Johnson" }],
-    },
-    {
-        id: "sample-2",
-        start_date: "2025-12-20",
-        end_date: "2025-12-24",
-        description: "Christmas holiday trip",
-        leave_type_id: "lt-1",
-        owner_id: "user-2",
-        approver_id: "approver-1",
-        requested_at: "2025-12-03T14:00:00.000Z",
-        submitted_at: "2025-12-03T14:15:00.000Z",
-        approval_at: null,
-        status: "submitted",
-        full_name: "Emily Davis",
-        leave_type: { id: "lt-1", name: "Annual Leave", code: "AL" },
-        approver: [{ id: "approver-1", name: "Sarah Johnson" }],
-    },
-    {
-        id: "sample-3",
-        start_date: "2025-12-15",
-        end_date: "2025-12-15",
-        description: "Doctor appointment",
-        leave_type_id: "lt-2",
-        owner_id: "user-3",
-        approver_id: "approver-2",
-        requested_at: "2025-12-04T11:00:00.000Z",
-        submitted_at: "2025-12-04T11:05:00.000Z",
-        approval_at: "2025-12-04T15:00:00.000Z",
-        status: "approved",
-        full_name: "Michael Brown",
-        leave_type: { id: "lt-2", name: "Sick Leave", code: "SL" },
-        approver: [{ id: "approver-2", name: "David Wilson" }],
-    },
-    {
-        id: "sample-4",
-        start_date: "2025-12-18",
-        end_date: "2025-12-19",
-        description: "Personal errands and home maintenance",
-        leave_type_id: "lt-3",
-        owner_id: "user-4",
-        approver_id: null,
-        requested_at: "2025-12-05T08:30:00.000Z",
-        submitted_at: null,
-        approval_at: null,
-        status: "draft",
-        full_name: "Jessica Taylor",
-        leave_type: { id: "lt-3", name: "Personal Leave", code: "PL" },
-        approver: [],
-    },
-    {
-        id: "sample-5",
-        start_date: "2025-12-08",
-        end_date: "2025-12-09",
-        description: "Conference attendance in New York",
-        leave_type_id: "lt-4",
-        owner_id: "user-5",
-        approver_id: "approver-1",
-        requested_at: "2025-11-28T10:00:00.000Z",
-        submitted_at: "2025-11-28T10:30:00.000Z",
-        approval_at: "2025-11-29T09:00:00.000Z",
-        status: "rejected",
-        full_name: "Robert Martinez",
-        leave_type: { id: "lt-4", name: "Work From Home", code: "WFH" },
-        approver: [{ id: "approver-1", name: "Sarah Johnson" }],
-    },
-    {
-        id: "sample-6",
-        start_date: "2025-12-26",
-        end_date: "2025-12-31",
-        description: "Year-end vacation",
-        leave_type_id: "lt-1",
-        owner_id: "user-6",
-        approver_id: "approver-2",
-        requested_at: "2025-12-02T16:00:00.000Z",
-        submitted_at: "2025-12-02T16:10:00.000Z",
-        approval_at: null,
-        status: "submitted",
-        full_name: "Amanda White",
-        leave_type: { id: "lt-1", name: "Annual Leave", code: "AL" },
-        approver: [{ id: "approver-2", name: "David Wilson" }],
-    },
-    {
-        id: "sample-7",
-        start_date: "2025-12-05",
-        end_date: "2025-12-06",
-        description: "Moving to new apartment",
-        leave_type_id: "lt-3",
-        owner_id: "user-7",
-        approver_id: "approver-3",
-        requested_at: "2025-11-25T13:00:00.000Z",
-        submitted_at: "2025-11-25T13:20:00.000Z",
-        approval_at: "2025-11-26T08:00:00.000Z",
-        status: "approved",
-        full_name: "Christopher Lee",
-        leave_type: { id: "lt-3", name: "Personal Leave", code: "PL" },
-        approver: [{ id: "approver-3", name: "Nancy Anderson" }],
-    },
-]
-
 function getLeaveRequestsQueryOptions({ page }: { page: number }) {
     return {
         queryFn: () =>
@@ -346,12 +230,8 @@ function LeaveRequestsTable() {
         navigate({ to: "/leave-requests", search: (prev) => ({ ...prev, page }) })
     }
 
-    // Use sample data if no real data is available
-    const apiRequests = data?.data ?? []
-    const useSampleData = apiRequests.length === 0
-    const allRequests = useSampleData ? sampleLeaveRequests : apiRequests
-    const requests = allRequests.slice(0, PER_PAGE)
-    const count = useSampleData ? sampleLeaveRequests.length : (data?.count ?? 0)
+    const requests = data?.data.slice(0, PER_PAGE) ?? []
+    const count = data?.count ?? 0
 
     if (isLoading) {
         return <PendingLeaveRequests />;
