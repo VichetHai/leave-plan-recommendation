@@ -17,10 +17,10 @@ import {
 interface PolicyPublic {
     code: string
     name: string
-    operator: string
-    values: string
-    scope: string
-    scope_detail: string
+    operation: string
+    value: string
+    score: number
+    description: string
     is_active: boolean
     id: string
 }
@@ -107,11 +107,13 @@ function PoliciesTable() {
             <Table.Root size={{ base: "sm", md: "md" }}>
                 <Table.Header>
                     <Table.Row>
+                        <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Code</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Operator</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Values</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Scope</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Operation</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Value</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Score</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Description</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
@@ -119,14 +121,16 @@ function PoliciesTable() {
                 <Table.Body>
                     {policies?.map((policy) => (
                         <Table.Row key={policy.id} opacity={isPlaceholderData ? 0.5 : 1}>
+                            <Table.Cell truncate maxW="xs">{policy.id}</Table.Cell>
                             <Table.Cell>{policy.code}</Table.Cell>
                             <Table.Cell>{policy.name}</Table.Cell>
-                            <Table.Cell>{policy.operator}</Table.Cell>
+                            <Table.Cell>{policy.operation}</Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {policy.values}
+                                {policy.value}
                             </Table.Cell>
+                            <Table.Cell>{policy.score}</Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {policy.scope}
+                                {policy.description}
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={policy.is_active ? "green" : "gray"}>

@@ -32,10 +32,10 @@ import { Field } from "../ui/field"
 interface PolicyCreate {
     code: string
     name: string
-    operator: string
-    values: string
-    scope: string
-    scope_detail: string
+    operation: string
+    value: string
+    score: number
+    description: string
     is_active: boolean
 }
 
@@ -68,17 +68,17 @@ const AddPolicy = () => {
         register,
         handleSubmit,
         reset,
-        formState: { errors, isValid, isSubmitting },
+        formState: { errors, isSubmitting },
     } = useForm<PolicyCreate>({
         mode: "onChange",
         criteriaMode: "all",
         defaultValues: {
             code: "",
             name: "",
-            operator: "",
-            values: "",
-            scope: "",
-            scope_detail: "",
+            operation: "",
+            value: "",
+            score: 0,
+            description: "",
             is_active: true,
         },
     })
@@ -158,57 +158,56 @@ const AddPolicy = () => {
 
                             <Field
                                 required
-                                invalid={!!errors.operator}
-                                errorText={errors.operator?.message}
-                                label="Operator"
+                                invalid={!!errors.operation}
+                                errorText={errors.operation?.message}
+                                label="Operation"
                             >
                                 <Input
-                                    {...register("operator", {
-                                        required: "Operator is required",
+                                    {...register("operation", {
+                                        required: "Operation is required",
                                     })}
-                                    placeholder="Operator (e.g., eq, gt, lt)"
+                                    placeholder="Operation (e.g., ==, >, <)"
                                     type="text"
                                 />
                             </Field>
 
                             <Field
                                 required
-                                invalid={!!errors.values}
-                                errorText={errors.values?.message}
-                                label="Values"
+                                invalid={!!errors.value}
+                                errorText={errors.value?.message}
+                                label="Value"
                             >
                                 <Input
-                                    {...register("values", {
-                                        required: "Values is required",
+                                    {...register("value", {
+                                        required: "Value is required",
                                     })}
-                                    placeholder="Policy values"
+                                    placeholder="Policy value"
                                     type="text"
                                 />
                             </Field>
 
                             <Field
-                                required
-                                invalid={!!errors.scope}
-                                errorText={errors.scope?.message}
-                                label="Scope"
+                                invalid={!!errors.score}
+                                errorText={errors.score?.message}
+                                label="Score"
                             >
                                 <Input
-                                    {...register("scope", {
-                                        required: "Scope is required",
+                                    {...register("score", {
+                                        valueAsNumber: true,
                                     })}
-                                    placeholder="Policy scope"
-                                    type="text"
+                                    placeholder="Score (e.g., 0)"
+                                    type="number"
                                 />
                             </Field>
 
                             <Field
-                                invalid={!!errors.scope_detail}
-                                errorText={errors.scope_detail?.message}
-                                label="Scope Detail"
+                                invalid={!!errors.description}
+                                errorText={errors.description?.message}
+                                label="Description"
                             >
                                 <Input
-                                    {...register("scope_detail")}
-                                    placeholder="Scope detail (optional)"
+                                    {...register("description")}
+                                    placeholder="Description (optional)"
                                     type="text"
                                 />
                             </Field>
@@ -245,7 +244,6 @@ const AddPolicy = () => {
                         <Button
                             variant="solid"
                             type="submit"
-                            disabled={!isValid}
                             loading={isSubmitting}
                         >
                             Save
