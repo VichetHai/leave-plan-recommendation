@@ -16,7 +16,9 @@ import {
 interface LeaveTypePublic {
     code: string
     name: string
+    entitlement: number
     description: string
+    is_allow_plan: boolean
     is_active: boolean
     id: string
 }
@@ -57,7 +59,7 @@ const leaveTypesSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getLeaveTypesQueryOptions({ page }: { page: number }) {
     return {
@@ -105,7 +107,9 @@ function LeaveTypesTable() {
                     <Table.Row>
                         <Table.ColumnHeader w="sm">Code</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Entitlement</Table.ColumnHeader>
                         <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Allow Plan</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
@@ -115,8 +119,14 @@ function LeaveTypesTable() {
                         <Table.Row key={leaveType.id} opacity={isPlaceholderData ? 0.5 : 1}>
                             <Table.Cell>{leaveType.code}</Table.Cell>
                             <Table.Cell>{leaveType.name}</Table.Cell>
+                            <Table.Cell>{leaveType.entitlement}</Table.Cell>
                             <Table.Cell truncate maxW="md">
                                 {leaveType.description}
+                            </Table.Cell>
+                            <Table.Cell>
+                                <Badge colorPalette={leaveType.is_allow_plan ? "blue" : "gray"}>
+                                    {leaveType.is_allow_plan ? "Yes" : "No"}
+                                </Badge>
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={leaveType.is_active ? "green" : "gray"}>

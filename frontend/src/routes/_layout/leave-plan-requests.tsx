@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { OpenAPI } from "@/client/core/OpenAPI"
-import LeaveTypesService from "@/client/LeaveTypesService"
-import { UsersService } from "@/client"
 import AddLeavePlanRequest from "@/components/LeavePlanRequest/AddLeavePlanRequest"
 import { LeavePlanRequestActionsMenu } from "@/components/Common/LeavePlanRequestActionsMenu"
 import PendingLeavePlanRequests from "@/components/Pending/PendingLeavePlanRequests"
@@ -15,18 +13,34 @@ import {
     PaginationRoot,
 } from "@/components/ui/pagination.tsx"
 
+// Nested user object returned by API
+interface UserInfo {
+    id: string
+    full_name: string
+    email: string
+}
+
+// Nested leave type object returned by API
+interface LeaveTypeInfo {
+    id: string
+    name: string
+}
+
 // This type will be auto-generated once you regenerate the API client
 interface LeavePlanRequestPublic {
     id: string
     description: string
     leave_type_id: string
     owner_id: string
-    approver_id: string
+    approver_id: string | null
     requested_at: string
+    submitted_at: string | null
     approved_at: string | null
     status: string
-    amount: number
-    details: any[]
+    details: Array<{ leave_date: string }>
+    owner: UserInfo
+    leave_type: LeaveTypeInfo
+    approver: UserInfo | null
 }
 
 interface LeavePlanRequestsResponse {
@@ -65,7 +79,7 @@ const leavePlanRequestsSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getLeavePlanRequestsQueryOptions({ page }: { page: number }) {
     return {
@@ -92,22 +106,6 @@ function LeavePlanRequestsTable() {
         placeholderData: (prevData) => prevData,
     })
 
-    // Fetch users for user names
-    const { data: usersData } = useQuery({
-        queryKey: ["users"],
-        queryFn: () => UsersService.readUsers({ limit: 1000 }),
-    })
-
-    // Fetch leave types for leave type names
-    const { data: leaveTypesData } = useQuery({
-        queryKey: ["leave-types"],
-        queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
-    })
-
-    // Create lookup maps
-    const usersMap = new Map(usersData?.data.map(user => [user.id, user.full_name || user.email]) || [])
-    const leaveTypesMap = new Map(leaveTypesData?.data.map(lt => [lt.id, lt.name]) || [])
-
     const setPage = (page: number) => {
         navigate({
             to: "/leave-plan-requests",
@@ -130,6 +128,8 @@ function LeavePlanRequestsTable() {
                 return "yellow"
             case "rejected":
                 return "red"
+            case "draft":
+                return "gray"
             default:
                 return "gray"
         }
@@ -144,7 +144,7 @@ function LeavePlanRequestsTable() {
                         <Table.ColumnHeader w="sm">User</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Approver</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Amount</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Days</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Requested At</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
@@ -157,16 +157,16 @@ function LeavePlanRequestsTable() {
                                 {request.description}
                             </Table.Cell>
                             <Table.Cell>
-                                {usersMap.get(request.owner_id) || "-"}
+                                {request.owner?.full_name || request.owner?.email || "-"}
                             </Table.Cell>
                             <Table.Cell>
-                                {leaveTypesMap.get(request.leave_type_id) || "-"}
+                                {request.leave_type?.name || "-"}
                             </Table.Cell>
                             <Table.Cell>
-                                {request.approver_id ? usersMap.get(request.approver_id) || "-" : "-"}
+                                {request.approver?.full_name || request.approver?.email || "-"}
                             </Table.Cell>
                             <Table.Cell>
-                                <Badge colorPalette="blue">{request.amount}</Badge>
+                                <Badge colorPalette="blue">{request.details?.length || 0}</Badge>
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={getStatusColor(request.status)}>

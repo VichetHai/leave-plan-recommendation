@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { TeamsService } from "@/client/TeamsService"
-import { useUsers } from "@/hooks/useUsers"
 import AddTeam from "@/components/Team/AddTeam"
 import { TeamActionsMenu } from "@/components/Common/TeamActionsMenu"
 import PendingTeams from "@/components/Pending/PendingTeams"
@@ -18,7 +17,7 @@ const teamsSearchSchema = z.object({
   page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getTeamsQueryOptions({ page }: { page: number }) {
   return {
@@ -43,8 +42,6 @@ function TeamsTable() {
     ...getTeamsQueryOptions({ page }),
     placeholderData: (prevData) => prevData,
   })
-  // Load users to map owner id to readable name
-  const { data: users = [] } = useUsers()
   const setPage = (page: number) => {
     navigate({ to: "/teams", search: (prev) => ({ ...prev, page }) })
   }
@@ -59,6 +56,7 @@ function TeamsTable() {
             <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Desc</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Owner</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Members</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
           </Table.Row>
@@ -68,7 +66,8 @@ function TeamsTable() {
             <Table.Row key={team.id} opacity={isPlaceholderData ? 0.5 : 1}>
               <Table.Cell>{team.name}</Table.Cell>
               <Table.Cell>{team.description || ""}</Table.Cell>
-              <Table.Cell>{users.find(u => u.id === team.team_owner_id)?.name || team.team_owner_id}</Table.Cell>
+              <Table.Cell>{team.full_name || team.email || team.team_owner_id}</Table.Cell>
+              <Table.Cell>{team.team_members?.length ?? 0}</Table.Cell>
               <Table.Cell>
                 <Badge colorPalette={team.is_active ? "green" : "gray"}>
                   {team.is_active ? "Active" : "Inactive"}

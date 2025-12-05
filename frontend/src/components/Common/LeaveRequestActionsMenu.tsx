@@ -9,6 +9,17 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import type { ApiError } from "@/client/core/ApiError"
 
+interface LeaveTypeInfo {
+    id: string
+    name: string
+    code: string
+}
+
+interface ApproverInfo {
+    id: string
+    name: string
+}
+
 interface LeaveRequestPublic {
     id: string
     start_date: string
@@ -21,6 +32,9 @@ interface LeaveRequestPublic {
     submitted_at: string | null
     approval_at: string | null
     status: string
+    full_name: string
+    leave_type: LeaveTypeInfo
+    approver: ApproverInfo[]
 }
 
 interface LeaveRequestActionsMenuProps {

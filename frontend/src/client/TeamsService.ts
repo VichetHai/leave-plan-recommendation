@@ -1,12 +1,20 @@
 import { OpenAPI } from "@/client/core/OpenAPI"
 
+export interface TeamMember {
+  id: string
+  name: string
+  email: string
+}
+
 export interface TeamPublic {
   name: string
   description: string
   team_owner_id: string
   is_active: boolean
   id: string
-  owner_id: string
+  team_members: TeamMember[]
+  full_name: string
+  email: string
 }
 
 export interface TeamCreate {

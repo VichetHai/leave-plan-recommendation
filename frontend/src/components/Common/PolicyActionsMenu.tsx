@@ -8,8 +8,10 @@ import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu"
 interface PolicyPublic {
     code: string
     name: string
-    value: string
-    description: string
+    operator: string
+    values: string
+    scope: string
+    scope_detail: string
     is_active: boolean
     id: string
 }

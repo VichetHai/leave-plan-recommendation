@@ -31,7 +31,9 @@ import { Field } from "../ui/field"
 interface LeaveTypeCreate {
     code: string
     name: string
+    entitlement: number
     description: string
+    is_allow_plan: boolean
     is_active: boolean
 }
 
@@ -70,7 +72,9 @@ const AddLeaveType = () => {
         defaultValues: {
             code: "",
             name: "",
+            entitlement: 0,
             description: "",
+            is_allow_plan: true,
             is_active: true,
         },
     })
@@ -150,6 +154,26 @@ const AddLeaveType = () => {
 
                             <Field
                                 required
+                                invalid={!!errors.entitlement}
+                                errorText={errors.entitlement?.message}
+                                label="Entitlement (days)"
+                            >
+                                <Input
+                                    {...register("entitlement", {
+                                        required: "Entitlement is required",
+                                        valueAsNumber: true,
+                                        min: {
+                                            value: 0,
+                                            message: "Entitlement must be 0 or greater",
+                                        },
+                                    })}
+                                    placeholder="Number of days"
+                                    type="number"
+                                />
+                            </Field>
+
+                            <Field
+                                required
                                 invalid={!!errors.description}
                                 errorText={errors.description?.message}
                                 label="Description"
@@ -165,6 +189,20 @@ const AddLeaveType = () => {
                         </VStack>
 
                         <Flex mt={4} direction="column" gap={4}>
+                            <Controller
+                                control={control}
+                                name="is_allow_plan"
+                                render={({ field }) => (
+                                    <Field disabled={field.disabled} colorPalette="teal">
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={({ checked }) => field.onChange(checked === true)}
+                                        >
+                                            Allow planning?
+                                        </Checkbox>
+                                    </Field>
+                                )}
+                            />
                             <Controller
                                 control={control}
                                 name="is_active"

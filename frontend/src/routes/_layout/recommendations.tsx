@@ -6,16 +6,18 @@ import { OpenAPI } from "@/client/core/OpenAPI"
 import { Skeleton } from "@/components/ui/skeleton"
 
 
-interface LeaveRecommendation {
+interface LeaveRecommendationItem {
     leave_date: string
-    bridge_holiday: boolean
-    team_workload: number
-    preference_score: number
-    predicted_score: number
+    bridge_holiday: boolean | null
+    team_workload: number | null
+    preference_score: number | null
+    predicted_score: number | null
 }
 
 interface RecommendationsResponse {
-    data: LeaveRecommendation[]
+    leave_type_id: string
+    year: number
+    data: LeaveRecommendationItem[]
 }
 
 // Temporary service - will be replaced by auto-generated RecommendationsService
@@ -105,28 +107,40 @@ function RecommendationsTable({ year }: { year: number }) {
                             </Badge>
                         </Table.Cell>
                         <Table.Cell>
-                            <Tooltip.Root>
-                                <Tooltip.Trigger asChild>
-                                    <span>
-                                        <Badge colorPalette={rec.team_workload < 0.4 ? "green" : rec.team_workload < 0.7 ? "yellow" : "red"}>
-                                            {rec.team_workload.toFixed(2)}
-                                        </Badge>
-                                    </span>
-                                </Tooltip.Trigger>
-                                <Tooltip.Content>
-                                    Lower is better
-                                </Tooltip.Content>
-                            </Tooltip.Root>
+                            {rec.team_workload != null ? (
+                                <Tooltip.Root>
+                                    <Tooltip.Trigger asChild>
+                                        <span>
+                                            <Badge colorPalette={rec.team_workload < 0.4 ? "green" : rec.team_workload < 0.7 ? "yellow" : "red"}>
+                                                {rec.team_workload.toFixed(2)}
+                                            </Badge>
+                                        </span>
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>
+                                        Lower is better
+                                    </Tooltip.Content>
+                                </Tooltip.Root>
+                            ) : (
+                                <Text color="gray.400">-</Text>
+                            )}
                         </Table.Cell>
                         <Table.Cell>
-                            <Badge colorPalette={rec.preference_score > 0.7 ? "green" : rec.preference_score > 0.4 ? "yellow" : "red"}>
-                                {rec.preference_score.toFixed(2)}
-                            </Badge>
+                            {rec.preference_score != null ? (
+                                <Badge colorPalette={rec.preference_score > 0.7 ? "green" : rec.preference_score > 0.4 ? "yellow" : "red"}>
+                                    {rec.preference_score.toFixed(2)}
+                                </Badge>
+                            ) : (
+                                <Text color="gray.400">-</Text>
+                            )}
                         </Table.Cell>
                         <Table.Cell>
-                            <Badge colorPalette={rec.predicted_score > 0.7 ? "green" : rec.predicted_score > 0.4 ? "yellow" : "red"}>
-                                {rec.predicted_score.toFixed(2)}
-                            </Badge>
+                            {rec.predicted_score != null ? (
+                                <Badge colorPalette={rec.predicted_score > 0.7 ? "green" : rec.predicted_score > 0.4 ? "yellow" : "red"}>
+                                    {rec.predicted_score.toFixed(2)}
+                                </Badge>
+                            ) : (
+                                <Text color="gray.400">-</Text>
+                            )}
                         </Table.Cell>
                     </Table.Row>
                 ))}

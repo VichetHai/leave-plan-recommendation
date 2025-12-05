@@ -31,7 +31,9 @@ import { Field } from "../ui/field"
 interface LeaveTypePublic {
     code: string
     name: string
+    entitlement: number
     description: string
+    is_allow_plan: boolean
     is_active: boolean
     id: string
 }
@@ -39,7 +41,9 @@ interface LeaveTypePublic {
 interface LeaveTypeUpdate {
     code?: string
     name?: string
+    entitlement?: number
     description?: string
+    is_allow_plan?: boolean
     is_active?: boolean
 }
 
@@ -88,7 +92,9 @@ const EditLeaveType = ({ leaveType }: EditLeaveTypeProps) => {
         defaultValues: {
             code: leaveType.code,
             name: leaveType.name,
+            entitlement: leaveType.entitlement,
             description: leaveType.description,
+            is_allow_plan: leaveType.is_allow_plan,
             is_active: leaveType.is_active,
         },
     })
@@ -166,6 +172,26 @@ const EditLeaveType = ({ leaveType }: EditLeaveTypeProps) => {
 
                             <Field
                                 required
+                                invalid={!!errors.entitlement}
+                                errorText={errors.entitlement?.message}
+                                label="Entitlement (days)"
+                            >
+                                <Input
+                                    {...register("entitlement", {
+                                        required: "Entitlement is required",
+                                        valueAsNumber: true,
+                                        min: {
+                                            value: 0,
+                                            message: "Entitlement must be 0 or greater",
+                                        },
+                                    })}
+                                    placeholder="Number of days"
+                                    type="number"
+                                />
+                            </Field>
+
+                            <Field
+                                required
                                 invalid={!!errors.description}
                                 errorText={errors.description?.message}
                                 label="Description"
@@ -181,6 +207,20 @@ const EditLeaveType = ({ leaveType }: EditLeaveTypeProps) => {
                         </VStack>
 
                         <Flex mt={4} direction="column" gap={4}>
+                            <Controller
+                                control={control}
+                                name="is_allow_plan"
+                                render={({ field }) => (
+                                    <Field disabled={field.disabled} colorPalette="teal">
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={({ checked }) => field.onChange(checked === true)}
+                                        >
+                                            Allow planning?
+                                        </Checkbox>
+                                    </Field>
+                                )}
+                            />
                             <Controller
                                 control={control}
                                 name="is_active"

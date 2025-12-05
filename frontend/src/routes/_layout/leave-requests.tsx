@@ -1,13 +1,10 @@
 import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import AddLeaveRequest from "@/components/LeaveRequest/AddLeaveRequest"
 import { LeaveRequestActionsMenu } from "@/components/Common/LeaveRequestActionsMenu"
 import PendingLeaveRequests from "@/components/Pending/PendingLeaveRequests"
-import LeaveTypesService from "@/client/LeaveTypesService"
-import { useUsers } from "@/hooks/useUsers"
 import {
     PaginationItems,
     PaginationNextTrigger,
@@ -15,6 +12,17 @@ import {
     PaginationRoot,
 } from "@/components/ui/pagination.tsx"
 import { OpenAPI } from "@/client/core/OpenAPI"
+
+interface LeaveTypeInfo {
+    id: string
+    name: string
+    code: string
+}
+
+interface ApproverInfo {
+    id: string
+    name: string
+}
 
 interface LeaveRequestPublic {
     id: string
@@ -28,6 +36,9 @@ interface LeaveRequestPublic {
     submitted_at: string | null
     approval_at: string | null
     status: string
+    full_name: string
+    leave_type: LeaveTypeInfo
+    approver: ApproverInfo[]
 }
 
 interface LeaveRequestsResponse {
@@ -64,7 +75,7 @@ const leaveRequestsSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getLeaveRequestsQueryOptions({ page }: { page: number }) {
     return {
@@ -91,13 +102,6 @@ function LeaveRequestsTable() {
         placeholderData: (prevData) => prevData,
     })
 
-    // Fetch leave types and users for name mapping
-    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
-    useEffect(() => {
-        LeaveTypesService.readLeaveTypes({ limit: 100 }).then((res) => setLeaveTypes(res.data))
-    }, [])
-    const { data: users = [] } = useUsers()
-
     const setPage = (page: number) => {
         navigate({ to: "/leave-requests", search: (prev) => ({ ...prev, page }) })
     }
@@ -105,14 +109,7 @@ function LeaveRequestsTable() {
     const requests = data?.data.slice(0, PER_PAGE) ?? []
     const count = data?.count ?? 0
 
-    // Map ids to names
-    const leaveTypeMap = Object.fromEntries(leaveTypes.map((lt) => [lt.id, lt.name]))
-    const userMap = Object.fromEntries(users.map((u) => [u.id, u.name]))
-
-    // Wait for leave requests, users, and leave types to load before showing table
-    const isUsersLoading = users.length === 0;
-    const isLeaveTypesLoading = leaveTypes.length === 0;
-    if (isLoading || isUsersLoading || isLeaveTypesLoading) {
+    if (isLoading) {
         return <PendingLeaveRequests />;
     }
 
@@ -149,11 +146,15 @@ function LeaveRequestsTable() {
                     {requests?.map((req) => (
                         <Table.Row key={req.id} opacity={isPlaceholderData ? 0.5 : 1}>
                             <Table.Cell truncate maxW="md">{req.description}</Table.Cell>
-                            <Table.Cell truncate maxW="sm">{userMap[req.owner_id] || req.owner_id}</Table.Cell>
-                            <Table.Cell truncate maxW="sm">{leaveTypeMap[req.leave_type_id] || req.leave_type_id}</Table.Cell>
+                            <Table.Cell truncate maxW="sm">{req.full_name || req.owner_id}</Table.Cell>
+                            <Table.Cell truncate maxW="sm">{req.leave_type?.name || req.leave_type_id}</Table.Cell>
                             <Table.Cell>{new Date(req.start_date).toLocaleDateString()}</Table.Cell>
                             <Table.Cell>{new Date(req.end_date).toLocaleDateString()}</Table.Cell>
-                            <Table.Cell truncate maxW="sm">{req.approver_id ? (userMap[req.approver_id] || req.approver_id) : "-"}</Table.Cell>
+                            <Table.Cell truncate maxW="sm">
+                                {req.approver && req.approver.length > 0
+                                    ? req.approver.map((a) => a.name).join(", ")
+                                    : "-"}
+                            </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={getStatusColor(req.status)}>
                                     {req.status}

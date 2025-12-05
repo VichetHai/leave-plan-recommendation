@@ -3,7 +3,9 @@ import { OpenAPI } from "@/client/core/OpenAPI"
 export interface LeaveTypePublic {
     code: string
     name: string
+    entitlement: number
     description: string
+    is_allow_plan: boolean
     is_active: boolean
     id: string
 }
@@ -11,14 +13,18 @@ export interface LeaveTypePublic {
 export interface LeaveTypeCreate {
     code: string
     name: string
+    entitlement: number
     description: string
+    is_allow_plan: boolean
     is_active: boolean
 }
 
 export interface LeaveTypeUpdate {
     code?: string
     name?: string
+    entitlement?: number
     description?: string
+    is_allow_plan?: boolean
     is_active?: boolean
 }
 

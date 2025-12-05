@@ -20,11 +20,13 @@ Content-Type: `application/json`
   "data": [
     {
       "code": "string",
-      "name": "string",
-      "value": "string",
-      "description": "string",
+      "name": "untitled",
+      "operator": "string",
+      "values": "string",
+      "scope": "string",
+      "scope_detail": "string",
       "is_active": true,
-      "id": "string"
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
     }
   ],
   "count": 0
@@ -58,9 +60,11 @@ Content-Type: `application/json`
 ```json
 {
   "code": "string",
-  "name": "string",
-  "value": "string",
-  "description": "string",
+  "name": "untitled",
+  "operator": "string",
+  "values": "string",
+  "scope": "string",
+  "scope_detail": "string",
   "is_active": true
 }
 ```
@@ -74,11 +78,13 @@ Content-Type: `application/json`
 ```json
 {
   "code": "string",
-  "name": "string",
-  "value": "string",
-  "description": "string",
+  "name": "untitled",
+  "operator": "string",
+  "values": "string",
+  "scope": "string",
+  "scope_detail": "string",
   "is_active": true,
-  "id": "string"
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 ```
 
@@ -104,7 +110,7 @@ Retrieve a policy by its ID.
 
 ### Parameters
 
-- `id` (string, path): The unique identifier of the policy.
+- `id` (string, path, required): The unique identifier of the policy.
 
 ### Responses
 
@@ -115,11 +121,13 @@ Content-Type: `application/json`
 ```json
 {
   "code": "string",
-  "name": "string",
-  "value": "string",
-  "description": "string",
+  "name": "untitled",
+  "operator": "string",
+  "values": "string",
+  "scope": "string",
+  "scope_detail": "string",
   "is_active": true,
-  "id": "string"
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 ```
 
@@ -145,7 +153,7 @@ Update a policy by its ID.
 
 ### Parameters
 
-- `id` (string, path): The unique identifier of the policy.
+- `id` (string, path, required): The unique identifier of the policy.
 
 ### Request Body
 
@@ -154,9 +162,11 @@ Content-Type: `application/json`
 ```json
 {
   "code": "string",
-  "name": "string",
-  "value": "string",
-  "description": "string",
+  "name": "untitled",
+  "operator": "string",
+  "values": "string",
+  "scope": "string",
+  "scope_detail": "string",
   "is_active": true
 }
 ```
@@ -170,11 +180,13 @@ Content-Type: `application/json`
 ```json
 {
   "code": "string",
-  "name": "string",
-  "value": "string",
-  "description": "string",
+  "name": "untitled",
+  "operator": "string",
+  "values": "string",
+  "scope": "string",
+  "scope_detail": "string",
   "is_active": true,
-  "id": "string"
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 ```
 
@@ -200,7 +212,7 @@ Delete a policy by its ID.
 
 ### Parameters
 
-- `id` (string, path): The unique identifier of the policy.
+- `id` (string, path, required): The unique identifier of the policy.
 
 ### Responses
 

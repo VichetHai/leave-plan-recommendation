@@ -116,16 +116,16 @@ No query parameters.
 
 ```json
 {
-  "name": "string",
   "date": "YYYY-MM-DD",
+  "name": "string",
   "description": "string"
 }
 ```
 
 **Fields:**
 
-- `name` (string, required): Name of the holiday
 - `date` (string, required): Date of the holiday in ISO format (YYYY-MM-DD)
+- `name` (string, required): Name of the holiday
 - `description` (string, required): Description of the holiday
 
 #### Response
@@ -136,7 +136,7 @@ No query parameters.
 
 ```json
 {
-  "data": "string",
+  "date": "string",
   "name": "Untitled",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -145,7 +145,7 @@ No query parameters.
 
 **Fields:**
 
-- `data` (string): The date of the created holiday
+- `date` (string): Date of the created holiday in ISO format (YYYY-MM-DD)
 - `name` (string): Name of the holiday
 - `description` (string): Description of the holiday
 - `id` (string): Unique identifier (UUID format)
@@ -157,8 +157,8 @@ curl -X POST "http://localhost/api/v1/public-holidays/" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Independence Day",
     "date": "2025-11-09",
+    "name": "Independence Day",
     "description": "Cambodia Independence Day"
   }'
 ```
@@ -167,7 +167,7 @@ curl -X POST "http://localhost/api/v1/public-holidays/" \
 
 ```json
 {
-  "data": "2025-11-09",
+  "date": "2025-11-09",
   "name": "Independence Day",
   "description": "Cambodia Independence Day",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -291,16 +291,16 @@ Update details of an existing public holiday.
 
 ```json
 {
-  "name": "string",
   "date": "YYYY-MM-DD",
+  "name": "string",
   "description": "string"
 }
 ```
 
 **Fields:**
 
-- `name` (string, required): Name of the holiday
 - `date` (string, required): Date of the holiday in ISO format (YYYY-MM-DD)
+- `name` (string, required): Name of the holiday
 - `description` (string, required): Description of the holiday
 
 #### Response
@@ -332,8 +332,8 @@ curl -X PUT "http://localhost/api/v1/public-holidays/{id}" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Updated Holiday",
     "date": "2025-12-31",
+    "name": "Updated Holiday",
     "description": "Updated description"
   }'
 ```
@@ -465,8 +465,8 @@ POST /api/v1/public-holidays/
 Content-Type: application/json
 
 {
-  "name": "New Year's Day",
   "date": "2026-01-01",
+  "name": "New Year's Day",
   "description": "First day of the year"
 }
 ```

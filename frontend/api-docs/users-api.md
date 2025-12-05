@@ -48,7 +48,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -58,7 +63,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active (default: true)
 - `is_superuser` (boolean): Whether the user has superuser privileges (default: false)
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 **Error Response (422 Unprocessable Entity)**
 
@@ -103,7 +112,9 @@ curl -X POST "http://localhost:8000/api/v1/users/signup" \
   "is_active": true,
   "is_superuser": false,
   "full_name": "New User",
-  "id": "9ba85f64-5717-4562-b3fc-2c963f66afa9"
+  "team_id": null,
+  "id": "9ba85f64-5717-4562-b3fc-2c963f66afa9",
+  "team": null
 }
 ```
 
@@ -118,6 +129,136 @@ curl -X POST "http://localhost:8000/api/v1/users/signup" \
 - May require email verification before account activation (depending on implementation).
 
 ---
+
+## Private API
+
+### Create User (Private)
+Create a new user via the private API endpoint.
+
+**Endpoint:** `POST /api/v1/private/users/`
+
+**Authentication:** Not required (Internal/Private endpoint - typically used for testing or internal services)
+
+#### Parameters
+
+No parameters required.
+
+#### Request Body (Required)
+
+Content-Type: `application/json`
+
+```json
+{
+  "email": "string",
+  "password": "string",
+  "full_name": "string",
+  "is_verified": false
+}
+```
+
+**Request Fields:**
+
+- `email` (string, required): User's email address
+- `password` (string, required): User's password
+- `full_name` (string, required): User's full name
+- `is_verified` (boolean, optional): Whether the user's email is verified (default: false)
+
+#### Response
+
+**Success Response (200 OK)**
+
+Content-Type: `application/json`
+
+```json
+{
+  "email": "user@example.com",
+  "is_active": true,
+  "is_superuser": false,
+  "full_name": "string",
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
+}
+```
+
+**Response Fields:**
+
+- `email` (string): User's email address
+- `is_active` (boolean): Whether the user account is active (default: true)
+- `is_superuser` (boolean): Whether the user has superuser privileges (default: false)
+- `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
+- `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
+
+**Error Response (422 Unprocessable Entity)**
+
+Content-Type: `application/json`
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["string"],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+
+**Error Fields:**
+
+- `detail` (array): Array of validation error objects
+  - `loc` (array): Location of the error (e.g., ["body", "email"])
+  - `msg` (string): Error message describing the validation failure
+  - `type` (string): Type of validation error
+
+#### Example Request
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/private/users/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "testuser@example.com",
+    "password": "SecurePassword123!",
+    "full_name": "Test User",
+    "is_verified": true
+  }'
+```
+
+#### Example Response
+
+```json
+{
+  "email": "testuser@example.com",
+  "is_active": true,
+  "is_superuser": false,
+  "full_name": "Test User",
+  "team_id": null,
+  "id": "9ba85f64-5717-4562-b3fc-2c963f66afa9",
+  "team": null
+}
+```
+
+#### Notes
+
+- This is a **private/internal** endpoint intended for testing and internal services.
+- This endpoint should NOT be exposed in production environments.
+- Unlike the public signup endpoint, this allows setting `is_verified` directly.
+- The `full_name` field is **required** (unlike public signup where it's optional).
+- New users are created with `is_active: true` and `is_superuser: false` by default.
+- Email must be unique in the system.
+- Password should meet security requirements (minimum length, complexity, etc.).
+
+---
+
+## Users API
 
 ### Create User
 Create a new user.
@@ -136,6 +277,7 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "password": "string"
 }
 ```
@@ -146,6 +288,7 @@ Content-Type: `application/json`
 - `is_active` (boolean, optional): Whether the user account is active (default: true)
 - `is_superuser` (boolean, optional): Whether the user has superuser privileges (default: false)
 - `full_name` (string, optional): User's full name
+- `team_id` (string, optional): ID of the team the user belongs to (UUID format)
 - `password` (string, required): User's password
 
 #### Response
@@ -160,7 +303,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -170,7 +318,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active
 - `is_superuser` (boolean): Whether the user has superuser privileges
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 **Error Response (422 Unprocessable Entity)**
 
@@ -206,6 +358,7 @@ curl -X POST "http://localhost:8000/api/v1/users/" \
     "is_active": true,
     "is_superuser": false,
     "full_name": "New User",
+    "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "password": "SecurePassword123!"
   }'
 ```
@@ -218,7 +371,12 @@ curl -X POST "http://localhost:8000/api/v1/users/" \
   "is_active": true,
   "is_superuser": false,
   "full_name": "New User",
-  "id": "9ba85f64-5717-4562-b3fc-2c963f66afa9"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "9ba85f64-5717-4562-b3fc-2c963f66afa9",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Engineering Team"
+  }
 }
 ```
 
@@ -254,7 +412,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -264,7 +427,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active
 - `is_superuser` (boolean): Whether the user has superuser privileges
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 #### Example Request
 
@@ -281,7 +448,12 @@ curl -X GET "http://localhost:8000/api/v1/users/me" \
   "is_active": true,
   "is_superuser": false,
   "full_name": "John Doe",
-  "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7"
+  "team_id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+  "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+  "team": {
+    "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+    "name": "Engineering Team"
+  }
 }
 ```
 
@@ -384,7 +556,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -394,7 +571,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active
 - `is_superuser` (boolean): Whether the user has superuser privileges
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 **Error Response (422 Unprocessable Entity)**
 
@@ -439,7 +620,12 @@ curl -X PATCH "http://localhost:8000/api/v1/users/me" \
   "is_active": true,
   "is_superuser": false,
   "full_name": "John Updated Doe",
-  "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7"
+  "team_id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+  "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+  "team": {
+    "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+    "name": "Engineering Team"
+  }
 }
 ```
 
@@ -575,7 +761,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -585,7 +776,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active
 - `is_superuser` (boolean): Whether the user has superuser privileges
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 **Error Response (422 Unprocessable Entity)**
 
@@ -625,7 +820,12 @@ curl -X GET "http://localhost:8000/api/v1/users/3fa85f64-5717-4562-b3fc-2c963f66
   "is_active": true,
   "is_superuser": false,
   "full_name": "John Doe",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Engineering Team"
+  }
 }
 ```
 
@@ -661,6 +861,7 @@ Content-Type: `application/json`
   "is_active": false,
   "is_superuser": false,
   "full_name": "string",
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "password": "string"
 }
 ```
@@ -671,6 +872,7 @@ Content-Type: `application/json`
 - `is_active` (boolean, optional): Whether the user account is active
 - `is_superuser` (boolean, optional): Whether the user has superuser privileges
 - `full_name` (string, optional): User's full name
+- `team_id` (string, optional): ID of the team the user belongs to (UUID format)
 - `password` (string, optional): New password for the user
 
 #### Response
@@ -685,7 +887,12 @@ Content-Type: `application/json`
   "is_active": true,
   "is_superuser": false,
   "full_name": "string",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string"
+  }
 }
 ```
 
@@ -695,7 +902,11 @@ Content-Type: `application/json`
 - `is_active` (boolean): Whether the user account is active
 - `is_superuser` (boolean): Whether the user has superuser privileges
 - `full_name` (string): User's full name
+- `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
 - `id` (string): Unique identifier (UUID format)
+- `team` (object, nullable): Team information
+  - `id` (string): Team's unique identifier (UUID format)
+  - `name` (string): Team's name
 
 **Error Response (422 Unprocessable Entity)**
 
@@ -730,7 +941,8 @@ curl -X PATCH "http://localhost:8000/api/v1/users/3fa85f64-5717-4562-b3fc-2c963f
     "email": "updated.user@example.com",
     "is_active": false,
     "is_superuser": false,
-    "full_name": "Updated User Name"
+    "full_name": "Updated User Name",
+    "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   }'
 ```
 
@@ -742,7 +954,12 @@ curl -X PATCH "http://localhost:8000/api/v1/users/3fa85f64-5717-4562-b3fc-2c963f
   "is_active": false,
   "is_superuser": false,
   "full_name": "Updated User Name",
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "team": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Engineering Team"
+  }
 }
 ```
 
@@ -866,7 +1083,12 @@ Content-Type: `application/json`
       "is_active": true,
       "is_superuser": false,
       "full_name": "string",
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+      "team_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "team": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string"
+      }
     }
   ],
   "count": 0
@@ -880,7 +1102,11 @@ Content-Type: `application/json`
   - `is_active` (boolean): Whether the user account is active
   - `is_superuser` (boolean): Whether the user has superuser privileges
   - `full_name` (string): User's full name
+  - `team_id` (string, nullable): ID of the team the user belongs to (UUID format)
   - `id` (string): Unique identifier (UUID format)
+  - `team` (object, nullable): Team information
+    - `id` (string): Team's unique identifier (UUID format)
+    - `name` (string): Team's name
 - `count` (integer): Total number of users returned
 
 **Error Response (422 Unprocessable Entity)**
@@ -928,14 +1154,21 @@ curl -X GET "http://localhost:8000/api/v1/users/?skip=10&limit=10" \
       "is_active": true,
       "is_superuser": true,
       "full_name": "Admin User",
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+      "team_id": null,
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "team": null
     },
     {
       "email": "john.doe@example.com",
       "is_active": true,
       "is_superuser": false,
       "full_name": "John Doe",
-      "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7"
+      "team_id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+      "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+      "team": {
+        "id": "7ba85f64-5717-4562-b3fc-2c963f66afa7",
+        "name": "Engineering Team"
+      }
     }
   ],
   "count": 2

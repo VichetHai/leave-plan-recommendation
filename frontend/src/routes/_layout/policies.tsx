@@ -17,8 +17,10 @@ import {
 interface PolicyPublic {
     code: string
     name: string
-    value: string
-    description: string
+    operator: string
+    values: string
+    scope: string
+    scope_detail: string
     is_active: boolean
     id: string
 }
@@ -59,7 +61,7 @@ const policiesSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getPoliciesQueryOptions({ page }: { page: number }) {
     return {
@@ -107,8 +109,9 @@ function PoliciesTable() {
                     <Table.Row>
                         <Table.ColumnHeader w="sm">Code</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Operator</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Values</Table.ColumnHeader>
-                        <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Scope</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
@@ -118,11 +121,12 @@ function PoliciesTable() {
                         <Table.Row key={policy.id} opacity={isPlaceholderData ? 0.5 : 1}>
                             <Table.Cell>{policy.code}</Table.Cell>
                             <Table.Cell>{policy.name}</Table.Cell>
+                            <Table.Cell>{policy.operator}</Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                {policy.value}
+                                {policy.values}
                             </Table.Cell>
-                            <Table.Cell truncate maxW="md">
-                                {policy.description}
+                            <Table.Cell truncate maxW="sm">
+                                {policy.scope}
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={policy.is_active ? "green" : "gray"}>

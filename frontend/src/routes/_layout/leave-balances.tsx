@@ -1,7 +1,4 @@
 import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
-import { useEffect, useState } from "react"
-import LeaveTypesService from "@/client/LeaveTypesService"
-import { useUsers } from "@/hooks/useUsers"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -16,13 +13,30 @@ import {
     PaginationRoot,
 } from "@/components/ui/pagination.tsx"
 
+// Nested object types for API response
+interface LeaveBalanceOwner {
+    id: string
+    full_name: string
+    email: string
+}
+
+interface LeaveBalanceLeaveType {
+    id: string
+    code: string
+    name: string
+}
+
 // This type will be auto-generated once you regenerate the API client
 interface LeaveBalancePublic {
     id: string
     year: string
     balance: number
+    taken_balance: number
+    available_balance: number
     leave_type_id: string
     owner_id: string
+    owner: LeaveBalanceOwner
+    leave_type: LeaveBalanceLeaveType
 }
 
 interface LeaveBalancesResponse {
@@ -55,27 +69,13 @@ const LeaveBalancesService = {
         }
         return response.json()
     },
-
-    readMyLeaveBalance: async (): Promise<LeaveBalancePublic> => {
-        const baseUrl = OpenAPI.BASE || ""
-        const token = localStorage.getItem("access_token") || ""
-        const response = await fetch(`${baseUrl}/api/v1/leave-balances/me`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-        if (!response.ok) {
-            throw new Error("Failed to fetch my leave balance")
-        }
-        return response.json()
-    },
 }
 
 const leaveBalancesSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getLeaveBalancesQueryOptions({ page }: { page: number }) {
     return {
@@ -102,17 +102,6 @@ function LeaveBalancesTable() {
         placeholderData: (prevData) => prevData,
     })
 
-    // Fetch leave types
-    const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
-    useEffect(() => {
-        LeaveTypesService.readLeaveTypes({ limit: 100 }).then((res) => {
-            setLeaveTypes(res.data)
-        })
-    }, [])
-
-    // Fetch users
-    const { data: users = [] } = useUsers()
-
     const setPage = (page: number) => {
         navigate({
             to: "/leave-balances",
@@ -122,11 +111,6 @@ function LeaveBalancesTable() {
 
     const leaveBalances = data?.data.slice(0, PER_PAGE) ?? []
     const count = data?.count ?? 0
-
-    // Map leave type id to name
-    const leaveTypeMap = Object.fromEntries(leaveTypes.map((lt) => [lt.id, lt.name]))
-    // Map user id to name
-    const userMap = Object.fromEntries(users.map((u) => [u.id, u.name]))
 
     if (isLoading) {
         return <PendingLeaveBalances />
@@ -138,9 +122,11 @@ function LeaveBalancesTable() {
                 <Table.Header>
                     <Table.Row>
                         <Table.ColumnHeader w="sm">Year</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Balance</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Owner</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Balance</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Taken</Table.ColumnHeader>
+                        <Table.ColumnHeader w="sm">Available</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
                     </Table.Row>
                 </Table.Header>
@@ -148,16 +134,26 @@ function LeaveBalancesTable() {
                     {leaveBalances?.map((leaveBalance) => (
                         <Table.Row key={leaveBalance.id} opacity={isPlaceholderData ? 0.5 : 1}>
                             <Table.Cell>{leaveBalance.year}</Table.Cell>
+                            <Table.Cell truncate maxW="sm">
+                                {leaveBalance.leave_type?.name || leaveBalance.leave_type_id}
+                            </Table.Cell>
+                            <Table.Cell truncate maxW="sm">
+                                {leaveBalance.owner?.full_name || leaveBalance.owner_id}
+                            </Table.Cell>
                             <Table.Cell>
-                                <Badge colorPalette={leaveBalance.balance > 0 ? "green" : "red"}>
+                                <Badge colorPalette="blue">
                                     {leaveBalance.balance}
                                 </Badge>
                             </Table.Cell>
-                            <Table.Cell truncate maxW="sm">
-                                {leaveTypeMap[leaveBalance.leave_type_id] || leaveBalance.leave_type_id}
+                            <Table.Cell>
+                                <Badge colorPalette="orange">
+                                    {leaveBalance.taken_balance}
+                                </Badge>
                             </Table.Cell>
-                            <Table.Cell truncate maxW="sm">
-                                {userMap[leaveBalance.owner_id] || leaveBalance.owner_id}
+                            <Table.Cell>
+                                <Badge colorPalette={leaveBalance.available_balance > 0 ? "green" : "red"}>
+                                    {leaveBalance.available_balance}
+                                </Badge>
                             </Table.Cell>
                             <Table.Cell>
                                 <LeaveBalanceActionsMenu leaveBalance={leaveBalance} />

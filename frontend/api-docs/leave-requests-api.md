@@ -35,17 +35,29 @@ Content-Type: `application/json`
 {
   "data": [
     {
-      "start_date": "2025-11-15",
-      "end_date": "2025-11-15",
+      "start_date": "2025-12-05",
+      "end_date": "2025-12-07",
       "description": "string",
       "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "status": "string",
-      "requested_at": "2025-11-15T10:39:08.205Z",
-      "submitted_at": "2025-11-15T10:39:08.205Z",
+      "requested_at": "2025-12-05T10:00:00.000Z",
+      "submitted_at": "2025-12-05T10:01:00.000Z",
       "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "approval_at": "2025-11-15T10:39:08.205Z"
+      "approval_at": "2025-12-05T10:02:00.000Z",
+      "full_name": "string",
+      "leave_type": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "code": "string"
+      },
+      "approver": [
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "string"
+        }
+      ]
     }
   ],
   "count": 0
@@ -77,8 +89,8 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
@@ -91,17 +103,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:41:44.427Z",
-  "submitted_at": "2025-11-15T10:41:44.427Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:41:44.427Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -135,17 +159,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:39:08.205Z",
-  "submitted_at": "2025-11-15T10:39:08.205Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:39:08.205Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -178,8 +214,8 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
@@ -192,17 +228,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:39:08.205Z",
-  "submitted_at": "2025-11-15T10:39:08.205Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:39:08.205Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -268,17 +316,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:39:55.134Z",
-  "submitted_at": "2025-11-15T10:39:55.134Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:39:55.134Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -312,17 +372,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:40:07.132Z",
-  "submitted_at": "2025-11-15T10:40:07.132Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:40:07.132Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -356,17 +428,29 @@ Content-Type: `application/json`
 
 ```json
 {
-  "start_date": "2025-11-15",
-  "end_date": "2025-11-15",
+  "start_date": "2025-12-05",
+  "end_date": "2025-12-07",
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "string",
-  "requested_at": "2025-11-15T10:40:19.587Z",
-  "submitted_at": "2025-11-15T10:40:19.587Z",
+  "requested_at": "2025-12-05T10:00:00.000Z",
+  "submitted_at": "2025-12-05T10:01:00.000Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approval_at": "2025-11-15T10:40:19.587Z"
+  "approval_at": "2025-12-05T10:02:00.000Z",
+  "full_name": "string",
+  "leave_type": {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "string",
+    "code": "string"
+  },
+  "approver": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string"
+    }
+  ]
 }
 ```
 
@@ -399,9 +483,20 @@ Content-Type: `application/json`
 - `approver_id` (string, UUID | null): Approver's user ID (when assigned)
 - `approval_at` (string, date-time | null): When the request was approved/rejected
 
+### Expanded Fields (Response Only)
+- `full_name` (string): Full name of the leave request owner
+- `leave_type` (object): Expanded leave type information
+  - `id` (string, UUID): Leave type unique identifier
+  - `name` (string): Leave type display name
+  - `code` (string): Leave type code
+- `approver` (array): List of approvers (may contain multiple approvers)
+  - `id` (string, UUID): Approver user ID
+  - `name` (string): Approver display name
+
 ## Notes
 
 - Date fields use ISO 8601 format. Ensure `start_date` ≤ `end_date`.
 - New requests are typically created in a “draft” state and should be submitted before approval.
 - Submit/approve/reject endpoints mutate `status`, `approver_id`, and `approval_at` as appropriate.
+- The `full_name`, `leave_type`, and `approver` fields are included in responses for display convenience but are not required in create/update requests.
 - Error responses follow FastAPI's validation error schema (422) as shown above.

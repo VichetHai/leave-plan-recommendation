@@ -28,17 +28,33 @@ import {
 import { Field } from "../ui/field"
 import { Select } from "../ui/select"
 
+// Nested user object returned by API
+interface UserInfo {
+    id: string
+    full_name: string
+    email: string
+}
+
+// Nested leave type object returned by API
+interface LeaveTypeInfo {
+    id: string
+    name: string
+}
+
 interface LeavePlanRequestPublic {
     id: string
     description: string
     leave_type_id: string
     owner_id: string
-    approver_id: string
+    approver_id: string | null
     requested_at: string
+    submitted_at: string | null
     approved_at: string | null
     status: string
-    amount: number
-    details: any[]
+    details: Array<{ leave_date: string }>
+    owner: UserInfo
+    leave_type: LeaveTypeInfo
+    approver: UserInfo | null
 }
 
 interface LeavePlanRequestUpdate {

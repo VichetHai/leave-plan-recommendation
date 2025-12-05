@@ -23,7 +23,15 @@ This document describes the API endpoints for managing teams in the system. All 
       "team_owner_id": "uuid",
       "is_active": true,
       "id": "uuid",
-      "owner_id": "uuid"
+      "team_members": [
+        {
+          "id": "uuid",
+          "name": "string",
+          "email": "string"
+        }
+      ],
+      "full_name": "string",
+      "email": "string"
     }
   ],
   "count": 0
@@ -52,7 +60,9 @@ This document describes the API endpoints for managing teams in the system. All 
   "team_owner_id": "uuid",
   "is_active": true,
   "id": "uuid",
-  "owner_id": "uuid"
+  "team_members": [],
+  "full_name": "string",
+  "email": "string"
 }
 ```
 
@@ -71,7 +81,15 @@ This document describes the API endpoints for managing teams in the system. All 
   "team_owner_id": "uuid",
   "is_active": true,
   "id": "uuid",
-  "owner_id": "uuid"
+  "team_members": [
+    {
+      "id": "uuid",
+      "name": "string",
+      "email": "string"
+    }
+  ],
+  "full_name": "string",
+  "email": "string"
 }
 ```
 
@@ -99,7 +117,15 @@ This document describes the API endpoints for managing teams in the system. All 
   "team_owner_id": "uuid",
   "is_active": true,
   "id": "uuid",
-  "owner_id": "uuid"
+  "team_members": [
+    {
+      "id": "uuid",
+      "name": "string",
+      "email": "string"
+    }
+  ],
+  "full_name": "string",
+  "email": "string"
 }
 ```
 
@@ -138,4 +164,6 @@ All endpoints may return validation errors:
 ## Notes
 - All UUIDs are returned as strings.
 - `is_active` is a boolean indicating if the team is active.
-- `team_owner_id` and `owner_id` are UUIDs referencing the user who owns the team.
+- `team_owner_id` is the UUID referencing the user who owns the team.
+- `full_name` and `email` are the owner's details included in the response.
+- `team_members` is an array of team member objects with `id`, `name`, and `email`.

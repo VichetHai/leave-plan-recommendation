@@ -57,7 +57,7 @@ const publicHolidaysSearchSchema = z.object({
     page: z.number().catch(1),
 })
 
-const PER_PAGE = 5
+const PER_PAGE = 10
 
 function getPublicHolidaysQueryOptions({ page }: { page: number }) {
     return {

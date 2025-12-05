@@ -5,7 +5,6 @@ import {
     Flex,
     Input,
     Text,
-    Textarea,
     VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -33,8 +32,10 @@ import { Field } from "../ui/field"
 interface PolicyCreate {
     code: string
     name: string
-    value: string
-    description: string
+    operator: string
+    values: string
+    scope: string
+    scope_detail: string
     is_active: boolean
 }
 
@@ -74,8 +75,10 @@ const AddPolicy = () => {
         defaultValues: {
             code: "",
             name: "",
-            value: "",
-            description: "",
+            operator: "",
+            values: "",
+            scope: "",
+            scope_detail: "",
             is_active: true,
         },
     })
@@ -155,31 +158,58 @@ const AddPolicy = () => {
 
                             <Field
                                 required
-                                invalid={!!errors.value}
-                                errorText={errors.value?.message}
-                                label="Value"
+                                invalid={!!errors.operator}
+                                errorText={errors.operator?.message}
+                                label="Operator"
                             >
                                 <Input
-                                    {...register("value", {
-                                        required: "Value is required",
+                                    {...register("operator", {
+                                        required: "Operator is required",
                                     })}
-                                    placeholder="Policy value"
+                                    placeholder="Operator (e.g., eq, gt, lt)"
                                     type="text"
                                 />
                             </Field>
 
                             <Field
                                 required
-                                invalid={!!errors.description}
-                                errorText={errors.description?.message}
-                                label="Description"
+                                invalid={!!errors.values}
+                                errorText={errors.values?.message}
+                                label="Values"
                             >
-                                <Textarea
-                                    {...register("description", {
-                                        required: "Description is required",
+                                <Input
+                                    {...register("values", {
+                                        required: "Values is required",
                                     })}
-                                    placeholder="Policy description"
-                                    rows={4}
+                                    placeholder="Policy values"
+                                    type="text"
+                                />
+                            </Field>
+
+                            <Field
+                                required
+                                invalid={!!errors.scope}
+                                errorText={errors.scope?.message}
+                                label="Scope"
+                            >
+                                <Input
+                                    {...register("scope", {
+                                        required: "Scope is required",
+                                    })}
+                                    placeholder="Policy scope"
+                                    type="text"
+                                />
+                            </Field>
+
+                            <Field
+                                invalid={!!errors.scope_detail}
+                                errorText={errors.scope_detail?.message}
+                                label="Scope Detail"
+                            >
+                                <Input
+                                    {...register("scope_detail")}
+                                    placeholder="Scope detail (optional)"
+                                    type="text"
                                 />
                             </Field>
                         </VStack>
