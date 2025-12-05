@@ -144,11 +144,13 @@ const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
         }
     }
 
-    // Fetch leave types for dropdown
+    // Fetch leave types for dropdown - only when dialog is open
     const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
-    const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(true)
+    const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(false)
     useEffect(() => {
+        if (!isOpen) return
         let active = true
+        setLoadingLeaveTypes(true)
         LeaveTypesService.readLeaveTypes({ limit: 100 })
             .then((res) => {
                 if (!active) return
@@ -161,7 +163,7 @@ const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
         return () => {
             active = false
         }
-    }, [])
+    }, [isOpen])
 
     const mutation = useMutation({
         mutationFn: (data: LeaveRequestUpdate) =>
