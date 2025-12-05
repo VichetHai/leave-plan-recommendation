@@ -1,6 +1,7 @@
-import { Badge, Container, Flex, Heading, Popover, Table, Text } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Table, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { useState } from "react"
 import { z } from "zod"
 import { TeamsService } from "@/client/TeamsService"
 import AddTeam from "@/components/Team/AddTeam"
@@ -12,6 +13,14 @@ import {
   PaginationPrevTrigger,
   PaginationRoot,
 } from "@/components/ui/pagination"
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const teamsSearchSchema = z.object({
   page: z.number().catch(1),
@@ -38,6 +47,8 @@ export const Route = createFileRoute("/_layout/teams")({
 function TeamsTable() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { page } = Route.useSearch()
+  const [selectedTeam, setSelectedTeam] = useState<typeof teams[0] | null>(null)
+
   const { data, isLoading, isPlaceholderData } = useQuery({
     ...getTeamsQueryOptions({ page }),
     placeholderData: (prevData) => prevData,
@@ -69,29 +80,12 @@ function TeamsTable() {
               <Table.Cell>{team.id}</Table.Cell>
               <Table.Cell>{team.name}</Table.Cell>
               <Table.Cell>{team.description || ""}</Table.Cell>
-              <Table.Cell>
-                <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <Text
-                      as="span"
-                      cursor="pointer"
-                      textDecoration="underline"
-                      textDecorationStyle="dotted"
-                      _hover={{ color: "blue.500" }}
-                    >
-                      {team.team_owner?.full_name || team.full_name || team.team_owner_id}
-                    </Text>
-                  </Popover.Trigger>
-                  <Popover.Positioner>
-                    <Popover.Content>
-                      <Popover.Arrow />
-                      <Popover.Body>
-                        <Text fontWeight="bold" mb={1}>Owner ID:</Text>
-                        <Text fontSize="sm" wordBreak="break-all">{team.team_owner_id}</Text>
-                      </Popover.Body>
-                    </Popover.Content>
-                  </Popover.Positioner>
-                </Popover.Root>
+              <Table.Cell
+                cursor="pointer"
+                _hover={{ textDecoration: "underline", color: "blue.500" }}
+                onClick={() => setSelectedTeam(team)}
+              >
+                {team.team_owner?.full_name || team.full_name || team.team_owner_id}
               </Table.Cell>
               <Table.Cell>{team.team_owner?.email || team.email || ""}</Table.Cell>
               <Table.Cell>{team.team_members?.length ?? 0}</Table.Cell>
@@ -107,6 +101,30 @@ function TeamsTable() {
           ))}
         </Table.Body>
       </Table.Root>
+
+      {/* Dialog to show owner details */}
+      <DialogRoot
+        size="xs"
+        placement="center"
+        open={selectedTeam !== null}
+        onOpenChange={({ open }) => !open && setSelectedTeam(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Owner Details</DialogTitle>
+          </DialogHeader>
+          <DialogBody pb={4}>
+            <Text fontWeight="bold" mb={1}>Name:</Text>
+            <Text mb={3}>{selectedTeam?.team_owner?.full_name || selectedTeam?.full_name || "-"}</Text>
+            <Text fontWeight="bold" mb={1}>Email:</Text>
+            <Text mb={3}>{selectedTeam?.team_owner?.email || selectedTeam?.email || "-"}</Text>
+            <Text fontWeight="bold" mb={1}>Owner ID:</Text>
+            <Text fontSize="sm" color="gray.600" wordBreak="break-all">{selectedTeam?.team_owner_id || "-"}</Text>
+          </DialogBody>
+          <DialogCloseTrigger />
+        </DialogContent>
+      </DialogRoot>
+
       <Flex justifyContent="flex-end" mt={4}>
         <PaginationRoot
           count={count}

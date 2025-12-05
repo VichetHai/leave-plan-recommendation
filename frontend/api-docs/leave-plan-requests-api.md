@@ -26,11 +26,12 @@ Retrieve a paginated list of leave plan requests.
       "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "requested_at": "2025-11-15T10:21:47.233Z",
-      "submitted_at": "2025-11-15T10:21:47.233Z",
-      "approved_at": "2025-11-15T10:21:47.233Z",
+      "requested_at": "2025-12-05T12:10:46.073Z",
+      "submitted_at": "2025-12-05T12:10:46.073Z",
       "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "approved_at": "2025-12-05T12:10:46.073Z",
       "status": "string",
+      "amount": 0,
       "details": [],
       "owner": {
         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -39,6 +40,7 @@ Retrieve a paginated list of leave plan requests.
       },
       "leave_type": {
         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "code": "string",
         "name": "string"
       },
       "approver": {
@@ -61,9 +63,10 @@ Retrieve a paginated list of leave plan requests.
   - `leave_type_id`: string — UUID of the leave type
   - `requested_at`: string(date-time) — When the request was created
   - `submitted_at`: string(date-time) — When the request was formally submitted
-  - `approved_at`: string(date-time | null) — When the request was approved (if applicable)
   - `approver_id`: string | null — UUID of the approver (if assigned)
+  - `approved_at`: string(date-time | null) — When the request was approved (if applicable)
   - `status`: string — Current status (e.g., "draft", "pending", "approved", "rejected")
+  - `amount`: number — Total amount of leave days (supports half-day with 0.5)
   - `details`: array — Per-date details
   - `owner`: object — Owner user details
     - `id`: string — User UUID
@@ -71,6 +74,7 @@ Retrieve a paginated list of leave plan requests.
     - `email`: string — User's email
   - `leave_type`: object — Leave type details
     - `id`: string — Leave type UUID
+    - `code`: string — Leave type code
     - `name`: string — Leave type name
   - `approver`: object | null — Approver user details (null if not assigned)
     - `id`: string — User UUID
@@ -181,24 +185,16 @@ GET /api/v1/leave-plan-requests/{id}
 {
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "requested_at": "2025-12-05T12:11:25.639Z",
+  "submitted_at": "2025-12-05T12:11:25.639Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "requested_at": "2025-10-25T13:30:48.411Z",
-  "submitted_at": "2025-10-25T13:30:48.411Z",
-  "approved_at": "2025-10-25T13:30:48.411Z",
+  "approved_at": "2025-12-05T12:11:25.639Z",
   "status": "string",
+  "amount": 0,
   "details": [],
   "owner": {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "full_name": "string",
-    "email": "string"
-  },
-  "leave_type": {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "name": "string"
-  },
-  "approver": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "full_name": "string",
     "email": "string"
@@ -247,13 +243,14 @@ Update a leave plan request by ID.
 {
   "description": "string",
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "requested_at": "2025-12-05T12:11:48.883Z",
+  "submitted_at": "2025-12-05T12:11:48.883Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "requested_at": "2025-11-15T10:31:23.353Z",
-  "submitted_at": "2025-11-15T10:31:23.353Z",
-  "approved_at": "2025-11-15T10:31:23.353Z",
+  "approved_at": "2025-12-05T12:11:48.883Z",
   "status": "string",
+  "amount": 0,
   "details": [],
   "owner": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -262,6 +259,7 @@ Update a leave plan request by ID.
   },
   "leave_type": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "code": "string",
     "name": "string"
   },
   "approver": {
@@ -331,11 +329,12 @@ Submit a leave plan request for approval.
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "requested_at": "2025-11-15T10:31:54.619Z",
-  "submitted_at": "2025-11-15T10:31:54.619Z",
+  "requested_at": "2025-12-05T12:12:23.036Z",
+  "submitted_at": "2025-12-05T12:12:23.036Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "approved_at": null,
   "status": "pending",
+  "amount": 0,
   "details": [],
   "owner": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -344,6 +343,7 @@ Submit a leave plan request for approval.
   },
   "leave_type": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "code": "string",
     "name": "string"
   },
   "approver": {
@@ -385,11 +385,12 @@ Approve a leave plan request.
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "requested_at": "2025-11-15T10:32:07.575Z",
-  "submitted_at": "2025-11-15T10:32:07.575Z",
+  "requested_at": "2025-12-05T12:12:35.886Z",
+  "submitted_at": "2025-12-05T12:12:35.886Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approved_at": "2025-11-15T10:32:07.575Z",
+  "approved_at": "2025-12-05T12:12:35.886Z",
   "status": "approved",
+  "amount": 0,
   "details": [],
   "owner": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -398,6 +399,7 @@ Approve a leave plan request.
   },
   "leave_type": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "code": "string",
     "name": "string"
   },
   "approver": {
@@ -439,11 +441,12 @@ Reject a leave plan request.
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "owner_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "leave_type_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "requested_at": "2025-11-15T10:32:21.135Z",
-  "submitted_at": "2025-11-15T10:32:21.135Z",
+  "requested_at": "2025-12-05T12:12:47.003Z",
+  "submitted_at": "2025-12-05T12:12:47.003Z",
   "approver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "approved_at": null,
+  "approved_at": "2025-12-05T12:12:47.003Z",
   "status": "rejected",
+  "amount": 0,
   "details": [],
   "owner": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -452,6 +455,7 @@ Reject a leave plan request.
   },
   "leave_type": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "code": "string",
     "name": "string"
   },
   "approver": {
@@ -485,9 +489,10 @@ Reject a leave plan request.
 - `submitted_at`: Timestamp when the request was submitted for approval
 - `approved_at`: Timestamp when the request was approved (null if pending or rejected)
 - `status`: Current status of the request (e.g., "draft", "pending", "approved", "rejected")
+- `amount`: Total amount of leave days requested (supports half-day with 0.5)
 - `details`: Array of leave date details, each containing a `leave_date` field
 - `owner`: Nested object containing owner user details (id, full_name, email)
-- `leave_type`: Nested object containing leave type details (id, name)
+- `leave_type`: Nested object containing leave type details (id, code, name)
 - `approver`: Nested object containing approver user details (id, full_name, email), or null if not assigned
 
 ## Status Values

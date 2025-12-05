@@ -1,6 +1,7 @@
-import { Badge, Container, Flex, Heading, Popover, Portal, Table, Text } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Table, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { useState } from "react"
 import { z } from "zod"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import AddLeaveBalance from "@/components/LeaveBalance/AddLeaveBalance"
@@ -12,6 +13,14 @@ import {
     PaginationPrevTrigger,
     PaginationRoot,
 } from "@/components/ui/pagination.tsx"
+import {
+    DialogBody,
+    DialogCloseTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogRoot,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 // Nested object types for API response
 interface LeaveBalanceOwner {
@@ -96,6 +105,7 @@ export const Route = createFileRoute("/_layout/leave-balances")({
 function LeaveBalancesTable() {
     const navigate = useNavigate({ from: Route.fullPath })
     const { page } = Route.useSearch()
+    const [selectedBalance, setSelectedBalance] = useState<LeaveBalancePublic | null>(null)
 
     const { data, isLoading, isPlaceholderData } = useQuery({
         ...getLeaveBalancesQueryOptions({ page }),
@@ -140,27 +150,14 @@ function LeaveBalancesTable() {
                             <Table.Cell truncate maxW="sm">
                                 {leaveBalance.leave_type?.name || leaveBalance.leave_type_id}
                             </Table.Cell>
-                            <Table.Cell truncate maxW="sm">
-                                <Popover.Root>
-                                    <Popover.Trigger asChild>
-                                        <Text as="span" cursor="pointer" _hover={{ textDecoration: "underline" }}>
-                                            {leaveBalance.owner?.full_name || leaveBalance.owner_id}
-                                        </Text>
-                                    </Popover.Trigger>
-                                    <Portal>
-                                        <Popover.Positioner>
-                                            <Popover.Content>
-                                                <Popover.Arrow>
-                                                    <Popover.ArrowTip />
-                                                </Popover.Arrow>
-                                                <Popover.Body>
-                                                    <Text fontWeight="bold">Owner ID:</Text>
-                                                    <Text>{leaveBalance.owner_id}</Text>
-                                                </Popover.Body>
-                                            </Popover.Content>
-                                        </Popover.Positioner>
-                                    </Portal>
-                                </Popover.Root>
+                            <Table.Cell
+                                truncate
+                                maxW="sm"
+                                cursor="pointer"
+                                _hover={{ textDecoration: "underline", color: "blue.500" }}
+                                onClick={() => setSelectedBalance(leaveBalance)}
+                            >
+                                {leaveBalance.owner?.full_name || leaveBalance.owner_id}
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">
                                 {leaveBalance.owner?.email || "-"}
@@ -187,6 +184,30 @@ function LeaveBalancesTable() {
                     ))}
                 </Table.Body>
             </Table.Root>
+
+            {/* Dialog to show owner details */}
+            <DialogRoot
+                size="xs"
+                placement="center"
+                open={selectedBalance !== null}
+                onOpenChange={({ open }) => !open && setSelectedBalance(null)}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Owner Details</DialogTitle>
+                    </DialogHeader>
+                    <DialogBody pb={4}>
+                        <Text fontWeight="bold" mb={1}>Name:</Text>
+                        <Text mb={3}>{selectedBalance?.owner?.full_name || "-"}</Text>
+                        <Text fontWeight="bold" mb={1}>Email:</Text>
+                        <Text mb={3}>{selectedBalance?.owner?.email || "-"}</Text>
+                        <Text fontWeight="bold" mb={1}>Owner ID:</Text>
+                        <Text fontSize="sm" color="gray.600" wordBreak="break-all">{selectedBalance?.owner_id || "-"}</Text>
+                    </DialogBody>
+                    <DialogCloseTrigger />
+                </DialogContent>
+            </DialogRoot>
+
             <Flex justifyContent="flex-end" mt={4}>
                 <PaginationRoot
                     count={count}
