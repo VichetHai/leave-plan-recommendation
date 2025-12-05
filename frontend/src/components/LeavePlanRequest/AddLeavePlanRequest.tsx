@@ -8,9 +8,10 @@ import {
     VStack,
     IconButton,
     Flex,
+    Spinner,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FaPlus, FaTrash } from "react-icons/fa"
 import type { ApiError } from "@/client/core/ApiError"
@@ -39,12 +40,24 @@ interface LeavePlanRequestPayload extends LeavePlanRequestCreate {
     details: Array<{ leave_date: string }>
 }
 
+interface RecommendationItem {
+    leave_date: string
+    bridge_holiday: boolean
+    team_workload: number
+    preference_score: number
+    predicted_score: number
+}
+
+interface RecommendationsResponse {
+    data: RecommendationItem[]
+}
+
 // Temporary service - will be replaced by auto-generated LeavePlanRequestsService
 const LeavePlanRequestsService = {
     createLeavePlanRequest: async ({
         requestBody,
     }: {
-            requestBody: LeavePlanRequestPayload
+        requestBody: LeavePlanRequestPayload
     }) => {
         const baseUrl = OpenAPI.BASE || ""
         const token = localStorage.getItem("access_token") || ""
@@ -63,8 +76,36 @@ const LeavePlanRequestsService = {
     },
 }
 
+// Temporary service for recommendations
+const RecommendationsService = {
+    getRecommendations: async ({
+        year,
+    }: {
+        year?: number
+    }): Promise<RecommendationsResponse> => {
+        const baseUrl = OpenAPI.BASE || ""
+        const token = localStorage.getItem("access_token") || ""
+        const params = new URLSearchParams()
+        if (year !== undefined) params.append("year", year.toString())
+
+        const response = await fetch(
+            `${baseUrl}/api/v1/recommends/leave-plan${params.toString() ? `?${params}` : ""}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+        if (!response.ok) {
+            throw new Error("Failed to fetch recommendations")
+        }
+        return response.json()
+    },
+}
+
 const AddLeavePlanRequest = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const [hasPopulatedDates, setHasPopulatedDates] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
     const [leaveDates, setLeaveDates] = useState<string[]>([])
@@ -76,9 +117,28 @@ const AddLeavePlanRequest = () => {
         queryFn: () => LeaveTypesService.readLeaveTypes({ skip: 0, limit: 100 }),
     })
 
+    // Fetch recommendations only once when dialog is first opened
+    const { data: recommendationsData, isFetching: isLoadingRecommendations, isFetched } = useQuery({
+        queryKey: ["leave-plan-recommendations"],
+        queryFn: () => RecommendationsService.getRecommendations({ year: new Date().getFullYear() }),
+        enabled: isOpen && !hasPopulatedDates, // Only fetch if not already populated
+        staleTime: Infinity, // Never refetch automatically
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+    })
+
+    // Auto-populate leave dates from recommendations when data is loaded (only once)
+    useEffect(() => {
+        if (isOpen && !hasPopulatedDates && isFetched && recommendationsData?.data && recommendationsData.data.length > 0) {
+            const recommendedDates = recommendationsData.data.map(item => item.leave_date)
+            setLeaveDates(recommendedDates)
+            setHasPopulatedDates(true)
+        }
+    }, [isOpen, recommendationsData, hasPopulatedDates, isFetched])
+
     const leaveTypes = leaveTypesData?.data || []
     const leaveTypeOptions = leaveTypes
-        .filter(lt => lt.is_active)
+        .filter(lt => lt.is_active && lt.is_allow_plan)
         .map(lt => ({
             value: lt.id,
             label: lt.name,
@@ -113,6 +173,9 @@ const AddLeavePlanRequest = () => {
         reset()
         setLeaveDates([])
         setNewDate("")
+        setHasPopulatedDates(false)
+        // Invalidate recommendations cache so it fetches fresh data next time
+        queryClient.removeQueries({ queryKey: ["leave-plan-recommendations"] })
     }
 
     const mutation = useMutation({
@@ -204,8 +267,18 @@ const AddLeavePlanRequest = () => {
                                 label="Leave Dates *"
                             >
                                 <VStack gap={3} align="stretch">
+                                    {/* Loading indicator for recommendations */}
+                                    {isLoadingRecommendations && !hasPopulatedDates && (
+                                        <Flex align="center" gap={2} p={2}>
+                                            <Spinner size="sm" />
+                                            <Text fontSize="sm" color="gray.600">
+                                                Loading recommended dates...
+                                            </Text>
+                                        </Flex>
+                                    )}
+
                                     {/* Input for adding new date */}
-                                    <Flex gap={2}>
+                                    <Flex gap={2} align="center">
                                         <Input
                                             value={newDate}
                                             onChange={(e) => setNewDate(e.target.value)}
@@ -221,11 +294,20 @@ const AddLeavePlanRequest = () => {
                                         >
                                             <FaPlus fontSize="16px" /> Add Date
                                         </Button>
+                                        <Text fontSize="sm" color="gray.600">
+                                            ({leaveDates.length})
+                                        </Text>
                                     </Flex>
 
                                     {/* List of added dates */}
                                     {leaveDates.length > 0 && (
-                                        <VStack gap={2} align="stretch">
+                                        <VStack
+                                            gap={2}
+                                            align="stretch"
+                                            maxH="200px"
+                                            overflowY="auto"
+                                            pr={1}
+                                        >
                                             {leaveDates.map((date, idx) => (
                                                 <Flex
                                                     key={idx}
@@ -247,7 +329,8 @@ const AddLeavePlanRequest = () => {
                                                         aria-label="Remove date"
                                                         children={<FaTrash fontSize="16px" />}
                                                         size="sm"
-                                                        colorPalette="red"
+                                                        variant="ghost"
+                                                        color="red.500"
                                                         onClick={() => handleRemoveDate(date)}
                                                     />
                                                 </Flex>
