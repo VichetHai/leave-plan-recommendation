@@ -1,8 +1,9 @@
 import { Badge, Button, Container, Flex, Heading, Input, Table, Text, Tooltip } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { OpenAPI } from "@/client/core/OpenAPI"
+import LeaveTypesService from "@/client/LeaveTypesService"
 import { Skeleton } from "@/components/ui/skeleton"
 
 
@@ -52,12 +53,16 @@ function PendingRecommendations() {
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
                 <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
+                <Table.Cell><Skeleton height="20px" /></Table.Cell>
             </Table.Row>
         ))
     return (
         <Table.Root size={{ base: "sm", md: "md" }}>
             <Table.Header>
                 <Table.Row>
+                    <Table.ColumnHeader w="sm">Year</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Leave Date</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Bridge Holiday</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Team Workload</Table.ColumnHeader>
@@ -75,7 +80,28 @@ function RecommendationsTable({ year }: { year: number }) {
         queryKey: ["recommendations", year],
         queryFn: () => RecommendationsService.getRecommendations({ year }),
     })
+
+    // Fetch leave types for mapping leave_type_id to name
+    const { data: leaveTypesData } = useQuery({
+        queryKey: ["leave-types"],
+        queryFn: () => LeaveTypesService.readLeaveTypes({ limit: 100 }),
+    })
+
+    // Create a map of leave type id to name
+    const leaveTypeMap = useMemo(() => {
+        const map: Record<string, string> = {}
+        if (leaveTypesData?.data) {
+            for (const lt of leaveTypesData.data) {
+                map[lt.id] = lt.name
+            }
+        }
+        return map
+    }, [leaveTypesData])
+
     const recommendations = data?.data ?? []
+    const leaveTypeId = data?.leave_type_id
+    const leaveTypeName = leaveTypeId ? (leaveTypeMap[leaveTypeId] || leaveTypeId) : "-"
+
     if (isLoading) {
         return <PendingRecommendations />
     }
@@ -90,6 +116,8 @@ function RecommendationsTable({ year }: { year: number }) {
         <Table.Root size={{ base: "sm", md: "md" }}>
             <Table.Header>
                 <Table.Row>
+                    <Table.ColumnHeader w="sm">Year</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Leave Type</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Leave Date</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Bridge Holiday</Table.ColumnHeader>
                     <Table.ColumnHeader w="sm">Team Workload</Table.ColumnHeader>
@@ -100,9 +128,11 @@ function RecommendationsTable({ year }: { year: number }) {
             <Table.Body>
                 {recommendations.map((rec, index) => (
                     <Table.Row key={index}>
+                        <Table.Cell>{year}</Table.Cell>
+                        <Table.Cell>{leaveTypeName}</Table.Cell>
                         <Table.Cell>{rec.leave_date}</Table.Cell>
                         <Table.Cell>
-                            <Badge colorPalette={rec.bridge_holiday ? "green" : "gray"}>
+                            <Badge colorPalette={rec.bridge_holiday ? "purple" : "gray"}>
                                 {rec.bridge_holiday ? "Bridge" : "No"}
                             </Badge>
                         </Table.Cell>
