@@ -80,6 +80,11 @@ export type UserPublic = {
     team?: {
         id: string;
         name: string;
+        team_owner?: {
+            id: string;
+            full_name: string;
+            email: string;
+        } | null;
     } | null;
 };
 

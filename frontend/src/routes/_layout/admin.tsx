@@ -1,4 +1,4 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Popover, Table, Text } from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -66,7 +66,10 @@ function UsersTable() {
             <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Team</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Team Owner Name</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Team Owner Email</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Super User</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
           </Table.Row>
@@ -87,9 +90,76 @@ function UsersTable() {
                 {user.email}
               </Table.Cell>
               <Table.Cell>
-                {user.is_superuser ? "Superuser" : "User"}
+                {user.team ? (
+                  <Popover.Root>
+                    <Popover.Trigger asChild>
+                      <Text
+                        as="span"
+                        cursor="pointer"
+                        textDecoration="underline"
+                        textDecorationStyle="dotted"
+                        _hover={{ color: "blue.500" }}
+                      >
+                        {user.team.name}
+                      </Text>
+                    </Popover.Trigger>
+                    <Popover.Positioner>
+                      <Popover.Content>
+                        <Popover.Arrow />
+                        <Popover.Body>
+                          <Text fontWeight="bold" mb={1}>Team ID:</Text>
+                          <Text fontSize="sm" wordBreak="break-all">{user.team.id}</Text>
+                        </Popover.Body>
+                      </Popover.Content>
+                    </Popover.Positioner>
+                  </Popover.Root>
+                ) : (
+                  ""
+                )}
               </Table.Cell>
-              <Table.Cell>{user.is_active ? "Active" : "Inactive"}</Table.Cell>
+              <Table.Cell>
+                {user.team?.team_owner ? (
+                  <Popover.Root>
+                    <Popover.Trigger asChild>
+                      <Text
+                        as="span"
+                        cursor="pointer"
+                        textDecoration="underline"
+                        textDecorationStyle="dotted"
+                        _hover={{ color: "blue.500" }}
+                      >
+                        {user.team.team_owner.full_name}
+                      </Text>
+                    </Popover.Trigger>
+                    <Popover.Positioner>
+                      <Popover.Content>
+                        <Popover.Arrow />
+                        <Popover.Body>
+                          <Text fontWeight="bold" mb={1}>Team Owner ID:</Text>
+                          <Text fontSize="sm" wordBreak="break-all">{user.team.team_owner.id}</Text>
+                        </Popover.Body>
+                      </Popover.Content>
+                    </Popover.Positioner>
+                  </Popover.Root>
+                ) : (
+                  ""
+                )}
+              </Table.Cell>
+              <Table.Cell>
+                {user.team?.team_owner?.email || ""}
+              </Table.Cell>
+              <Table.Cell>
+                {user.is_superuser ? (
+                  <Badge colorPalette="purple">Yes</Badge>
+                ) : (
+                  ""
+                )}
+              </Table.Cell>
+              <Table.Cell>
+                <Badge colorPalette={user.is_active ? "green" : "gray"}>
+                  {user.is_active ? "Active" : "Inactive"}
+                </Badge>
+              </Table.Cell>
               <Table.Cell>
                 <UserActionsMenu
                   user={user}

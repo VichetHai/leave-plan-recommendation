@@ -16,6 +16,7 @@ import { FaExchangeAlt } from "react-icons/fa"
 import { type UserPublic, UsersService, type UserUpdate } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
+import { useTeams } from "@/hooks/useTeams"
 import { emailPattern, handleError } from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import {
@@ -27,6 +28,7 @@ import {
   DialogTitle,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
 
 interface EditUserProps {
   user: UserPublic
@@ -40,6 +42,7 @@ const EditUser = ({ user }: EditUserProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
+  const { data: teams = [], isLoading: isLoadingTeams } = useTeams()
   const {
     control,
     register,
@@ -52,7 +55,10 @@ const EditUser = ({ user }: EditUserProps) => {
   } = useForm<UserUpdateForm>({
     mode: "onBlur",
     criteriaMode: "all",
-    defaultValues: user,
+    defaultValues: {
+      ...user,
+      team_id: user.team_id || "",
+    },
   })
 
   // Watch the password field and auto-fill confirm_password
@@ -132,6 +138,29 @@ const EditUser = ({ user }: EditUserProps) => {
                   {...register("full_name")}
                   placeholder="Full name"
                   type="text"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.team_id}
+                errorText={errors.team_id?.message}
+                label="Team"
+              >
+                <Controller
+                  control={control}
+                  name="team_id"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Select team..."
+                      options={teams.map(team => ({
+                        value: team.id,
+                        label: team.name
+                      }))}
+                      disabled={isLoadingTeams || isSubmitting}
+                    />
+                  )}
                 />
               </Field>
 
