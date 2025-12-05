@@ -105,6 +105,7 @@ function LeaveTypesTable() {
             <Table.Root size={{ base: "sm", md: "md" }}>
                 <Table.Header>
                     <Table.Row>
+                        <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Code</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Entitlement</Table.ColumnHeader>
@@ -117,6 +118,7 @@ function LeaveTypesTable() {
                 <Table.Body>
                     {leaveTypes?.map((leaveType) => (
                         <Table.Row key={leaveType.id} opacity={isPlaceholderData ? 0.5 : 1}>
+                            <Table.Cell>{leaveType.id}</Table.Cell>
                             <Table.Cell>{leaveType.code}</Table.Cell>
                             <Table.Cell>{leaveType.name}</Table.Cell>
                             <Table.Cell>{leaveType.entitlement}</Table.Cell>
