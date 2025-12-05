@@ -103,6 +103,7 @@ function PublicHolidaysTable() {
             <Table.Root size={{ base: "sm", md: "md" }}>
                 <Table.Header>
                     <Table.Row>
+                        <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
                         <Table.ColumnHeader w="sm">Date</Table.ColumnHeader>
                         <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
@@ -112,6 +113,7 @@ function PublicHolidaysTable() {
                 <Table.Body>
                     {publicHolidays?.map((publicHoliday) => (
                         <Table.Row key={publicHoliday.id} opacity={isPlaceholderData ? 0.5 : 1}>
+                            <Table.Cell>{publicHoliday.id}</Table.Cell>
                             <Table.Cell>{publicHoliday.name}</Table.Cell>
                             <Table.Cell>{publicHoliday.date}</Table.Cell>
                             <Table.Cell truncate maxW="md">
