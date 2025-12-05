@@ -56,7 +56,7 @@ const DeleteLeaveType = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the leave type")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["leave-types"] })
         },
     })
 

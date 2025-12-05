@@ -57,7 +57,7 @@ const DeletePublicHoliday = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the public holiday")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["public-holidays"] })
         },
     })
 

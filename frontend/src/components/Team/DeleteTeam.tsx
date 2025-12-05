@@ -23,7 +23,7 @@ const DeleteTeam = ({ id }: { id: string }) => {
             handleError(err)
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["teams"] })
         },
     })
     return (

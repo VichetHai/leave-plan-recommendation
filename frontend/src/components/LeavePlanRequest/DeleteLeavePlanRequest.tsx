@@ -53,7 +53,7 @@ const DeleteLeavePlanRequest = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the leave plan request")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["leave-plan-requests"] })
         },
     })
 

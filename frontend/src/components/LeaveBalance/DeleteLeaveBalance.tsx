@@ -49,7 +49,7 @@ const DeleteLeaveBalance = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the leave balance")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["leave-balances"] })
         },
     })
 

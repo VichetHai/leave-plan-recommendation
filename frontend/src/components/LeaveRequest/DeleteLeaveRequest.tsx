@@ -49,7 +49,7 @@ const DeleteLeaveRequest = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the leave request")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["leave-requests"] })
         },
     })
 

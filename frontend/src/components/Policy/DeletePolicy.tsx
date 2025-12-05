@@ -57,7 +57,7 @@ const DeletePolicy = ({ id }: { id: string }) => {
             showErrorToast("An error occurred while deleting the policy")
         },
         onSettled: () => {
-            queryClient.invalidateQueries()
+            queryClient.invalidateQueries({ queryKey: ["policies"] })
         },
     })
 
