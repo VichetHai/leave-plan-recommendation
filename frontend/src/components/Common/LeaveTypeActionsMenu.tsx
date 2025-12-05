@@ -1,16 +1,9 @@
 import { IconButton } from "@chakra-ui/react"
 import { BsThreeDotsVertical } from "react-icons/bs"
+import type { LeaveTypePublic } from "@/client/LeaveTypesService"
 import DeleteLeaveType from "../LeaveType/DeleteLeaveType"
 import EditLeaveType from "../LeaveType/EditLeaveType"
 import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu"
-
-interface LeaveTypePublic {
-    code: string
-    name: string
-    description: string
-    is_active: boolean
-    id: string
-}
 
 interface LeaveTypeActionsMenuProps {
     leaveType: LeaveTypePublic

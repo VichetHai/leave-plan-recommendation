@@ -316,7 +316,7 @@ const AddLeavePlanRequest = () => {
                                                     p={2}
                                                     borderWidth="1px"
                                                     borderRadius="md"
-                                                    bg="gray.50"
+                                                    bg={{ base: "gray.50", _dark: "gray.700" }}
                                                 >
                                                     <Text flex={1}>
                                                         {new Date(date).toLocaleDateString("en-GB", {
