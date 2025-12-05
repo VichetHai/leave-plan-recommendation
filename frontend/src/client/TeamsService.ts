@@ -98,4 +98,14 @@ export const TeamsService = {
     if (!response.ok) throw new Error("Failed to delete team")
     return response.json()
   },
+
+  getTeam: async ({ id }: { id: string }): Promise<TeamPublic> => {
+    const baseUrl = OpenAPI.BASE || ""
+    const token = localStorage.getItem("access_token") || ""
+    const response = await fetch(`${baseUrl}/api/v1/teams/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) throw new Error("Failed to fetch team")
+    return response.json()
+  },
 }

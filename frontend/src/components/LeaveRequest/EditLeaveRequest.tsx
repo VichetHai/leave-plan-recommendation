@@ -65,6 +65,15 @@ interface LeaveRequestUpdate {
 
 // Temporary service - replace with auto-generated client when available
 const LeaveRequestsService = {
+    getLeaveRequest: async ({ id }: { id: string }): Promise<LeaveRequestPublic> => {
+        const baseUrl = OpenAPI.BASE || ""
+        const token = localStorage.getItem("access_token") || ""
+        const response = await fetch(`${baseUrl}/api/v1/leave-requests/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!response.ok) throw new Error("Failed to fetch leave request")
+        return response.json()
+    },
     updateLeaveRequest: async ({
         id,
         requestBody,
@@ -95,6 +104,7 @@ interface EditLeaveRequestProps {
 
 const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
     const [isOpen, setIsOpen] = useState(false)
+    const [isLoadingRecord, setIsLoadingRecord] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
 
@@ -115,6 +125,24 @@ const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
             leave_type_id: leaveRequest.leave_type_id,
         },
     })
+
+    // Fetch fresh record when dialog opens
+    const fetchRecord = async () => {
+        setIsLoadingRecord(true)
+        try {
+            const freshRecord = await LeaveRequestsService.getLeaveRequest({ id: leaveRequest.id })
+            reset({
+                description: freshRecord.description,
+                start_date: freshRecord.start_date?.slice(0, 10),
+                end_date: freshRecord.end_date?.slice(0, 10),
+                leave_type_id: freshRecord.leave_type_id,
+            })
+        } catch (error) {
+            console.error("Failed to fetch record:", error)
+        } finally {
+            setIsLoadingRecord(false)
+        }
+    }
 
     // Fetch leave types for dropdown
     const [leaveTypes, setLeaveTypes] = useState<import("@/client/LeaveTypesService").LeaveTypePublic[]>([])
@@ -162,12 +190,21 @@ const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
     const end = watch("end_date") as string | undefined
     const dateRangeInvalid = Boolean(start && end && start > end)
 
+    const handleOpenChange = async ({ open }: { open: boolean }) => {
+        if (open) {
+            setIsOpen(true)
+            await fetchRecord()
+        } else {
+            setIsOpen(false)
+        }
+    }
+
     return (
         <DialogRoot
             size={{ base: "xs", md: "md" }}
             placement="center"
             open={isOpen}
-            onOpenChange={({ open }) => setIsOpen(open)}
+            onOpenChange={handleOpenChange}
         >
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -176,93 +213,97 @@ const EditLeaveRequest = ({ leaveRequest }: EditLeaveRequestProps) => {
                 </Button>
             </DialogTrigger>
             <DialogContent>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <DialogHeader>
-                        <DialogTitle>Edit Leave Request</DialogTitle>
-                    </DialogHeader>
-                    <DialogBody>
-                        <Text mb={4}>Update the leave request details below.</Text>
-                        <VStack gap={4}>
-                            <Field
-                                required
-                                invalid={!!errors.description}
-                                errorText={errors.description?.message}
-                                label="Description"
-                            >
-                                <Textarea
-                                    {...register("description", {
-                                        required: "Description is required",
-                                    })}
-                                    placeholder="Reason for leave"
-                                    rows={3}
-                                />
-                            </Field>
+                {isLoadingRecord ? (
+                    <DialogBody>Loading...</DialogBody>
+                ) : (
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <DialogHeader>
+                            <DialogTitle>Edit Leave Request</DialogTitle>
+                        </DialogHeader>
+                        <DialogBody>
+                            <Text mb={4}>Update the leave request details below.</Text>
+                            <VStack gap={4}>
+                                <Field
+                                    required
+                                    invalid={!!errors.description}
+                                    errorText={errors.description?.message}
+                                    label="Description"
+                                >
+                                    <Textarea
+                                        {...register("description", {
+                                            required: "Description is required",
+                                        })}
+                                        placeholder="Reason for leave"
+                                        rows={3}
+                                    />
+                                </Field>
 
-                            <Field
-                                required
-                                invalid={!!errors.leave_type_id}
-                                errorText={errors.leave_type_id?.message}
-                                label="Leave Type"
-                            >
-                                <Select
-                                    placeholder={loadingLeaveTypes ? "Loading..." : "Select leave type"}
-                                    {...register("leave_type_id", {
-                                        required: "Leave Type is required",
-                                    })}
-                                    disabled={loadingLeaveTypes}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                        setValue("leave_type_id", e.target.value, { shouldValidate: true })
+                                <Field
+                                    required
+                                    invalid={!!errors.leave_type_id}
+                                    errorText={errors.leave_type_id?.message}
+                                    label="Leave Type"
+                                >
+                                    <Select
+                                        placeholder={loadingLeaveTypes ? "Loading..." : "Select leave type"}
+                                        {...register("leave_type_id", {
+                                            required: "Leave Type is required",
+                                        })}
+                                        disabled={loadingLeaveTypes}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                            setValue("leave_type_id", e.target.value, { shouldValidate: true })
+                                        }
+                                        options={leaveTypes.map((t) => ({ value: t.id, label: t.name }))}
+                                    />
+                                </Field>
+
+                                <Field
+                                    required
+                                    invalid={!!errors.start_date}
+                                    errorText={errors.start_date?.message}
+                                    label="Start Date"
+                                >
+                                    <Input
+                                        {...register("start_date", {
+                                            required: "Start date is required",
+                                        })}
+                                        type="date"
+                                    />
+                                </Field>
+
+                                <Field
+                                    required
+                                    invalid={!!errors.end_date || dateRangeInvalid}
+                                    errorText={
+                                        dateRangeInvalid
+                                            ? "End date must be on or after start date"
+                                            : errors.end_date?.message
                                     }
-                                    options={leaveTypes.map((t) => ({ value: t.id, label: t.name }))}
-                                />
-                            </Field>
+                                    label="End Date"
+                                >
+                                    <Input
+                                        {...register("end_date", {
+                                            required: "End date is required",
+                                        })}
+                                        type="date"
+                                    />
+                                </Field>
+                            </VStack>
+                        </DialogBody>
 
-                            <Field
-                                required
-                                invalid={!!errors.start_date}
-                                errorText={errors.start_date?.message}
-                                label="Start Date"
-                            >
-                                <Input
-                                    {...register("start_date", {
-                                        required: "Start date is required",
-                                    })}
-                                    type="date"
-                                />
-                            </Field>
-
-                            <Field
-                                required
-                                invalid={!!errors.end_date || dateRangeInvalid}
-                                errorText={
-                                    dateRangeInvalid
-                                        ? "End date must be on or after start date"
-                                        : errors.end_date?.message
-                                }
-                                label="End Date"
-                            >
-                                <Input
-                                    {...register("end_date", {
-                                        required: "End date is required",
-                                    })}
-                                    type="date"
-                                />
-                            </Field>
-                        </VStack>
-                    </DialogBody>
-
-                    <DialogFooter gap={2}>
-                        <DialogActionTrigger asChild>
-                            <Button variant="subtle" colorPalette="gray" disabled={isSubmitting}>
-                                Cancel
+                        <DialogFooter gap={2}>
+                            <DialogActionTrigger asChild>
+                                <Button variant="subtle" colorPalette="gray" disabled={isSubmitting}>
+                                    Cancel
+                                </Button>
+                            </DialogActionTrigger>
+                            <Button variant="solid" type="submit" loading={isSubmitting} disabled={dateRangeInvalid}>
+                                Save
                             </Button>
-                        </DialogActionTrigger>
-                        <Button variant="solid" type="submit" loading={isSubmitting} disabled={dateRangeInvalid}>
-                            Save
-                        </Button>
-                    </DialogFooter>
-                    <DialogCloseTrigger />
-                </form>
+                        </DialogFooter>
+                        <DialogCloseTrigger />
+                    </form>
+                )}
             </DialogContent>
         </DialogRoot>
     )

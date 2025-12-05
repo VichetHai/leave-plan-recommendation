@@ -53,7 +53,10 @@ const LeaveRequestsService = {
             body: JSON.stringify(requestBody),
         })
         if (!response.ok) {
-            throw new Error("Failed to create leave request")
+            const errorBody = await response.json().catch(() => ({}))
+            const error = new Error("Failed to create leave request") as any
+            error.body = errorBody
+            throw error
         }
         return response.json()
     },
