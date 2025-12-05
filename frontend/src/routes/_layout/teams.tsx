@@ -1,4 +1,4 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Popover, Table, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -53,9 +53,11 @@ function TeamsTable() {
       <Table.Root size={{ base: "sm", md: "md" }}>
         <Table.Header>
           <Table.Row>
+            <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Desc</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Owner</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Description</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Owner Name</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Owner Email</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Members</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
@@ -64,9 +66,34 @@ function TeamsTable() {
         <Table.Body>
           {teams?.map((team) => (
             <Table.Row key={team.id} opacity={isPlaceholderData ? 0.5 : 1}>
+              <Table.Cell>{team.id}</Table.Cell>
               <Table.Cell>{team.name}</Table.Cell>
               <Table.Cell>{team.description || ""}</Table.Cell>
-              <Table.Cell>{team.full_name || team.email || team.team_owner_id}</Table.Cell>
+              <Table.Cell>
+                <Popover.Root>
+                  <Popover.Trigger asChild>
+                    <Text
+                      as="span"
+                      cursor="pointer"
+                      textDecoration="underline"
+                      textDecorationStyle="dotted"
+                      _hover={{ color: "blue.500" }}
+                    >
+                      {team.team_owner?.full_name || team.full_name || team.team_owner_id}
+                    </Text>
+                  </Popover.Trigger>
+                  <Popover.Positioner>
+                    <Popover.Content>
+                      <Popover.Arrow />
+                      <Popover.Body>
+                        <Text fontWeight="bold" mb={1}>Owner ID:</Text>
+                        <Text fontSize="sm" wordBreak="break-all">{team.team_owner_id}</Text>
+                      </Popover.Body>
+                    </Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
+              </Table.Cell>
+              <Table.Cell>{team.team_owner?.email || team.email || ""}</Table.Cell>
               <Table.Cell>{team.team_members?.length ?? 0}</Table.Cell>
               <Table.Cell>
                 <Badge colorPalette={team.is_active ? "green" : "gray"}>

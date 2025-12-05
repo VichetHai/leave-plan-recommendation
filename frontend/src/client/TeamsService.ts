@@ -6,6 +6,12 @@ export interface TeamMember {
   email: string
 }
 
+export interface TeamOwner {
+  id: string
+  full_name: string
+  email: string
+}
+
 export interface TeamPublic {
   name: string
   description: string
@@ -13,8 +19,10 @@ export interface TeamPublic {
   is_active: boolean
   id: string
   team_members: TeamMember[]
-  full_name: string
-  email: string
+  team_owner: TeamOwner
+  // Legacy fields (for backward compatibility)
+  full_name?: string
+  email?: string
 }
 
 export interface TeamCreate {
