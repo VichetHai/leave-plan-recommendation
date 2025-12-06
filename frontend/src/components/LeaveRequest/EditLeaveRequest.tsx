@@ -30,13 +30,20 @@ import LeaveTypesService from "@/client/LeaveTypesService"
 
 interface LeaveTypeInfo {
     id: string
-    name: string
     code: string
+    name: string
+}
+
+interface OwnerInfo {
+    id: string
+    full_name: string
+    email: string
 }
 
 interface ApproverInfo {
     id: string
-    name: string
+    full_name: string
+    email: string
 }
 
 interface LeaveRequestPublic {
@@ -47,13 +54,14 @@ interface LeaveRequestPublic {
     leave_type_id: string
     owner_id: string
     approver_id: string | null
+    amount: number
     requested_at: string
     submitted_at: string | null
     approval_at: string | null
     status: string
-    full_name: string
+    owner: OwnerInfo
     leave_type: LeaveTypeInfo
-    approver: ApproverInfo[]
+    approver: ApproverInfo | null
 }
 
 interface LeaveRequestUpdate {

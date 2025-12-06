@@ -24,13 +24,20 @@ import {
 
 interface LeaveTypeInfo {
     id: string
-    name: string
     code: string
+    name: string
+}
+
+interface OwnerInfo {
+    id: string
+    full_name: string
+    email: string
 }
 
 interface ApproverInfo {
     id: string
-    name: string
+    full_name: string
+    email: string
 }
 
 interface LeaveRequestPublic {
@@ -41,13 +48,14 @@ interface LeaveRequestPublic {
     leave_type_id: string
     owner_id: string
     approver_id: string | null
+    amount: number
     requested_at: string
     submitted_at: string | null
     approval_at: string | null
     status: string
-    full_name: string
+    owner: OwnerInfo
     leave_type: LeaveTypeInfo
-    approver: ApproverInfo[]
+    approver: ApproverInfo | null
 }
 
 interface LeaveRequestsResponse {
@@ -102,8 +110,8 @@ export const Route = createFileRoute("/_layout/leave-requests")({
     validateSearch: (search) => leaveRequestsSearchSchema.parse(search),
 })
 
-// Popup component to show owner_id when clicking on name
-function NameWithPopover({ name, ownerId }: { name: string; ownerId: string }) {
+// Popup component to show owner details when clicking on name
+function OwnerWithPopover({ owner }: { owner: OwnerInfo }) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -119,7 +127,7 @@ function NameWithPopover({ name, ownerId }: { name: string; ownerId: string }) {
                 _hover={{ textDecoration: "underline", color: "blue.500" }}
                 onClick={() => setIsOpen(true)}
             >
-                {name}
+                {owner.full_name}
             </Box>
             <DialogContent>
                 <DialogHeader>
@@ -127,9 +135,11 @@ function NameWithPopover({ name, ownerId }: { name: string; ownerId: string }) {
                 </DialogHeader>
                 <DialogBody pb={4}>
                     <Text fontWeight="bold" mb={1}>Name:</Text>
-                    <Text mb={3}>{name}</Text>
+                    <Text mb={3}>{owner.full_name}</Text>
+                    <Text fontWeight="bold" mb={1}>Email:</Text>
+                    <Text mb={3}>{owner.email}</Text>
                     <Text fontWeight="bold" mb={1}>Owner ID:</Text>
-                    <Text fontSize="sm" color="gray.600" wordBreak="break-all">{ownerId}</Text>
+                    <Text fontSize="sm" color="gray.600" wordBreak="break-all">{owner.id}</Text>
                 </DialogBody>
                 <DialogCloseTrigger />
             </DialogContent>
@@ -137,15 +147,13 @@ function NameWithPopover({ name, ownerId }: { name: string; ownerId: string }) {
     )
 }
 
-// Popup component to show approver IDs when clicking on approver names
-function ApproverWithPopover({ approvers }: { approvers: ApproverInfo[] }) {
+// Popup component to show approver details when clicking on approver name
+function ApproverWithPopover({ approver }: { approver: ApproverInfo | null }) {
     const [isOpen, setIsOpen] = useState(false)
 
-    if (!approvers || !Array.isArray(approvers) || approvers.length === 0) {
+    if (!approver) {
         return <Text>-</Text>
     }
-
-    const approverNames = approvers.map((a) => a.name).join(", ")
 
     return (
         <DialogRoot
@@ -160,21 +168,19 @@ function ApproverWithPopover({ approvers }: { approvers: ApproverInfo[] }) {
                 _hover={{ textDecoration: "underline", color: "blue.500" }}
                 onClick={() => setIsOpen(true)}
             >
-                {approverNames}
+                {approver.full_name}
             </Box>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Approver Details</DialogTitle>
                 </DialogHeader>
                 <DialogBody pb={4}>
-                    {approvers.map((approver, index) => (
-                        <Box key={approver.id} mb={index < approvers.length - 1 ? 3 : 0}>
-                            <Text fontWeight="bold" mb={1}>Name:</Text>
-                            <Text mb={2}>{approver.name}</Text>
-                            <Text fontWeight="bold" mb={1}>Approver ID:</Text>
-                            <Text fontSize="sm" color="gray.600" wordBreak="break-all">{approver.id}</Text>
-                        </Box>
-                    ))}
+                    <Text fontWeight="bold" mb={1}>Name:</Text>
+                    <Text mb={2}>{approver.full_name}</Text>
+                    <Text fontWeight="bold" mb={1}>Email:</Text>
+                    <Text mb={2}>{approver.email}</Text>
+                    <Text fontWeight="bold" mb={1}>Approver ID:</Text>
+                    <Text fontSize="sm" color="gray.600" wordBreak="break-all">{approver.id}</Text>
                 </DialogBody>
                 <DialogCloseTrigger />
             </DialogContent>
@@ -241,22 +247,15 @@ function LeaveRequestsTable() {
         switch (status.toLowerCase()) {
             case "approved":
                 return "green"
+            case "pending":
             case "submitted":
                 return "yellow"
             case "rejected":
                 return "red"
+            case "draft":
             default:
                 return "gray"
         }
-    }
-
-    // Calculate amount of days between start and end date (inclusive)
-    const calculateDays = (startDate: string, endDate: string) => {
-        const start = new Date(startDate)
-        const end = new Date(endDate)
-        const diffTime = Math.abs(end.getTime() - start.getTime())
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-        return diffDays
     }
 
     return (
@@ -287,17 +286,14 @@ function LeaveRequestsTable() {
                                 />
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                <NameWithPopover
-                                    name={req.full_name || "-"}
-                                    ownerId={req.owner_id}
-                                />
+                                <OwnerWithPopover owner={req.owner} />
                             </Table.Cell>
                             <Table.Cell truncate maxW="sm">{req.leave_type?.name || req.leave_type_id}</Table.Cell>
                             <Table.Cell>{new Date(req.start_date).toLocaleDateString()}</Table.Cell>
                             <Table.Cell>{new Date(req.end_date).toLocaleDateString()}</Table.Cell>
-                            <Table.Cell>{calculateDays(req.start_date, req.end_date)} days</Table.Cell>
+                            <Table.Cell>{req.amount} days</Table.Cell>
                             <Table.Cell truncate maxW="sm">
-                                <ApproverWithPopover approvers={req.approver} />
+                                <ApproverWithPopover approver={req.approver} />
                             </Table.Cell>
                             <Table.Cell>
                                 <Badge colorPalette={getStatusColor(req.status)}>

@@ -11,13 +11,20 @@ import type { ApiError } from "@/client/core/ApiError"
 
 interface LeaveTypeInfo {
     id: string
-    name: string
     code: string
+    name: string
+}
+
+interface OwnerInfo {
+    id: string
+    full_name: string
+    email: string
 }
 
 interface ApproverInfo {
     id: string
-    name: string
+    full_name: string
+    email: string
 }
 
 interface LeaveRequestPublic {
@@ -28,13 +35,14 @@ interface LeaveRequestPublic {
     leave_type_id: string
     owner_id: string
     approver_id: string | null
+    amount: number
     requested_at: string
     submitted_at: string | null
     approval_at: string | null
     status: string
-    full_name: string
+    owner: OwnerInfo
     leave_type: LeaveTypeInfo
-    approver: ApproverInfo[]
+    approver: ApproverInfo | null
 }
 
 interface LeaveRequestActionsMenuProps {
@@ -101,6 +109,11 @@ export const LeaveRequestActionsMenu = ({ leaveRequest, disabled }: LeaveRequest
         onSettled: () => queryClient.invalidateQueries({ queryKey: ["leave-requests"] }),
     })
 
+    const status = leaveRequest.status
+    const isDraft = status === "draft"
+    const isPending = status === "pending"
+    const isApprovedOrRejected = status === "approved" || status === "rejected"
+
     return (
         <MenuRoot>
             <MenuTrigger asChild>
@@ -109,17 +122,31 @@ export const LeaveRequestActionsMenu = ({ leaveRequest, disabled }: LeaveRequest
                 </IconButton>
             </MenuTrigger>
             <MenuContent>
-                <EditLeaveRequest leaveRequest={leaveRequest} />
-                <DeleteLeaveRequest id={leaveRequest.id} />
-                <Button variant="ghost" size="sm" onClick={() => submitMutation.mutate()} disabled={submitMutation.isPending}>
-                    Submit
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => approveMutation.mutate()} disabled={approveMutation.isPending}>
-                    Approve
-                </Button>
-                <Button variant="ghost" size="sm" colorPalette="red" onClick={() => rejectMutation.mutate()} disabled={rejectMutation.isPending}>
-                    Reject
-                </Button>
+                {/* Draft: Edit, Delete, Submit */}
+                {isDraft && (
+                    <>
+                        <EditLeaveRequest leaveRequest={leaveRequest} />
+                        <DeleteLeaveRequest id={leaveRequest.id} />
+                        <Button variant="ghost" size="sm" onClick={() => submitMutation.mutate()} disabled={submitMutation.isPending}>
+                            Submit
+                        </Button>
+                    </>
+                )}
+                {/* Pending: Approve, Reject only */}
+                {isPending && (
+                    <>
+                        <Button variant="ghost" size="sm" onClick={() => approveMutation.mutate()} disabled={approveMutation.isPending}>
+                            Approve
+                        </Button>
+                        <Button variant="ghost" size="sm" colorPalette="red" onClick={() => rejectMutation.mutate()} disabled={rejectMutation.isPending}>
+                            Reject
+                        </Button>
+                    </>
+                )}
+                {/* Approved/Rejected: Delete only */}
+                {isApprovedOrRejected && (
+                    <DeleteLeaveRequest id={leaveRequest.id} />
+                )}
             </MenuContent>
         </MenuRoot>
     )
