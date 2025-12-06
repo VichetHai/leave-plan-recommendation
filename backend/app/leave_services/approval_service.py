@@ -20,7 +20,7 @@ def can_reject(current_user: CurrentUser, db_obj) -> bool:
 
 
 def get_line_approver(current_user: CurrentUser) -> User | None:
-    team = current_user.team if current_user.team else None
+    team = current_user.team if current_user else None
     if team:
-        return team.owner
+        return team.team_owner
     return None
