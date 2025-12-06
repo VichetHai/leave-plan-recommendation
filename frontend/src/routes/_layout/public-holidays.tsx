@@ -1,18 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { createFileRoute } from "@tanstack/react-router"
+import { Container, Heading, Table } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
-import { z } from "zod"
 import { OpenAPI } from "@/client/core/OpenAPI"
 import AddPublicHoliday from "@/components/PublicHoliday/AddPublicHoliday"
 import { PublicHolidayActionsMenu } from "@/components/Common/PublicHolidayActionsMenu"
 import PendingPublicHolidays from "@/components/Pending/PendingPublicHolidays"
 import useAuth from "@/hooks/useAuth"
-import {
-    PaginationItems,
-    PaginationNextTrigger,
-    PaginationPrevTrigger,
-    PaginationRoot,
-} from "@/components/ui/pagination.tsx"
 
 // This type will be auto-generated once you regenerate the API client
 interface PublicHolidayPublic {
@@ -29,20 +22,10 @@ interface PublicHolidaysResponse {
 
 // Temporary service - will be replaced by auto-generated PublicHolidaysService
 const PublicHolidaysService = {
-    readPublicHolidays: async ({
-        skip,
-        limit,
-    }: {
-        skip?: number
-        limit?: number
-    }): Promise<PublicHolidaysResponse> => {
-        const params = new URLSearchParams()
-        if (skip !== undefined) params.append("skip", skip.toString())
-        if (limit !== undefined) params.append("limit", limit.toString())
-
+    readPublicHolidays: async (): Promise<PublicHolidaysResponse> => {
         const baseUrl = OpenAPI.BASE || ""
         const token = localStorage.getItem("access_token") || ""
-        const response = await fetch(`${baseUrl}/api/v1/public-holidays/?${params}`, {
+        const response = await fetch(`${baseUrl}/api/v1/public-holidays/`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -54,95 +37,57 @@ const PublicHolidaysService = {
     },
 }
 
-const publicHolidaysSearchSchema = z.object({
-    page: z.number().catch(1),
-})
-
-const PER_PAGE = 10
-
-function getPublicHolidaysQueryOptions({ page }: { page: number }) {
+function getPublicHolidaysQueryOptions() {
     return {
-        queryFn: () =>
-            PublicHolidaysService.readPublicHolidays({
-                skip: (page - 1) * PER_PAGE,
-                limit: PER_PAGE,
-            }),
-        queryKey: ["public-holidays", { page }],
+        queryFn: () => PublicHolidaysService.readPublicHolidays(),
+        queryKey: ["public-holidays"],
     }
 }
 
 export const Route = createFileRoute("/_layout/public-holidays")({
     component: PublicHolidays,
-    validateSearch: (search) => publicHolidaysSearchSchema.parse(search),
 })
 
 function PublicHolidaysTable({ isSuperuser }: { isSuperuser: boolean }) {
-    const navigate = useNavigate({ from: Route.fullPath })
-    const { page } = Route.useSearch()
-
-    const { data, isLoading, isPlaceholderData } = useQuery({
-        ...getPublicHolidaysQueryOptions({ page }),
-        placeholderData: (prevData) => prevData,
+    const { data, isLoading } = useQuery({
+        ...getPublicHolidaysQueryOptions(),
     })
 
-    const setPage = (page: number) => {
-        navigate({
-            to: "/public-holidays",
-            search: (prev) => ({ ...prev, page }),
-        })
-    }
-
-    const publicHolidays = data?.data.slice(0, PER_PAGE) ?? []
-    const count = data?.count ?? 0
+    const publicHolidays = data?.data ?? []
 
     if (isLoading) {
         return <PendingPublicHolidays />
     }
 
     return (
-        <>
-            <Table.Root size={{ base: "sm", md: "md" }}>
-                <Table.Header>
-                    <Table.Row>
-                        {isSuperuser && <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>}
-                        <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Date</Table.ColumnHeader>
-                        <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
-                        {isSuperuser && <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>}
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {publicHolidays?.map((publicHoliday) => (
-                        <Table.Row key={publicHoliday.id} opacity={isPlaceholderData ? 0.5 : 1}>
-                            {isSuperuser && <Table.Cell>{publicHoliday.id}</Table.Cell>}
-                            <Table.Cell>{publicHoliday.name}</Table.Cell>
-                            <Table.Cell>{publicHoliday.date}</Table.Cell>
-                            <Table.Cell truncate maxW="md">
-                                {publicHoliday.description}
+        <Table.Root size={{ base: "sm", md: "md" }}>
+            <Table.Header>
+                <Table.Row>
+                    {isSuperuser && <Table.ColumnHeader w="sm">ID</Table.ColumnHeader>}
+                    <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
+                    <Table.ColumnHeader w="sm">Date</Table.ColumnHeader>
+                    <Table.ColumnHeader w="md">Description</Table.ColumnHeader>
+                    {isSuperuser && <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>}
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
+                {publicHolidays?.map((publicHoliday) => (
+                    <Table.Row key={publicHoliday.id}>
+                        {isSuperuser && <Table.Cell>{publicHoliday.id}</Table.Cell>}
+                        <Table.Cell>{publicHoliday.name}</Table.Cell>
+                        <Table.Cell>{publicHoliday.date}</Table.Cell>
+                        <Table.Cell truncate maxW="md">
+                            {publicHoliday.description}
+                        </Table.Cell>
+                        {isSuperuser && (
+                            <Table.Cell>
+                                <PublicHolidayActionsMenu publicHoliday={publicHoliday} />
                             </Table.Cell>
-                            {isSuperuser && (
-                                <Table.Cell>
-                                    <PublicHolidayActionsMenu publicHoliday={publicHoliday} />
-                                </Table.Cell>
-                            )}
-                        </Table.Row>
-                    ))}
-                </Table.Body>
-            </Table.Root>
-            <Flex justifyContent="flex-end" mt={4}>
-                <PaginationRoot
-                    count={count}
-                    pageSize={PER_PAGE}
-                    onPageChange={({ page }) => setPage(page)}
-                >
-                    <Flex>
-                        <PaginationPrevTrigger />
-                        <PaginationItems />
-                        <PaginationNextTrigger />
-                    </Flex>
-                </PaginationRoot>
-            </Flex>
-        </>
+                        )}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
     )
 }
 
@@ -152,7 +97,7 @@ function PublicHolidays() {
 
     return (
         <Container maxW="full">
-            <Heading size="lg" pt={12}>
+            <Heading size="lg" pt={12} pb={6}>
                 Public Holidays Management
             </Heading>
 
