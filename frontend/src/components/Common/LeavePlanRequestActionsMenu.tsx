@@ -1,7 +1,10 @@
 import { IconButton } from "@chakra-ui/react"
 import { BsThreeDotsVertical } from "react-icons/bs"
+import ApproveLeavePlanRequest from "../LeavePlanRequest/ApproveLeavePlanRequest"
 import DeleteLeavePlanRequest from "../LeavePlanRequest/DeleteLeavePlanRequest"
 import EditLeavePlanRequest from "../LeavePlanRequest/EditLeavePlanRequest"
+import RejectLeavePlanRequest from "../LeavePlanRequest/RejectLeavePlanRequest"
+import SubmitLeavePlanRequest from "../LeavePlanRequest/SubmitLeavePlanRequest"
 import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu"
 
 // Nested user object returned by API
@@ -42,6 +45,10 @@ export const LeavePlanRequestActionsMenu = ({
     leavePlanRequest,
     disabled,
 }: LeavePlanRequestActionsMenuProps) => {
+    const status = leavePlanRequest.status?.toLowerCase() || ""
+    const isDraft = status === "draft"
+    const isPending = status === "pending"
+
     return (
         <MenuRoot>
             <MenuTrigger asChild>
@@ -50,6 +57,12 @@ export const LeavePlanRequestActionsMenu = ({
                 </IconButton>
             </MenuTrigger>
             <MenuContent>
+                {/* Submit: only available when status is "draft" */}
+                {isDraft && <SubmitLeavePlanRequest id={leavePlanRequest.id} />}
+                {/* Approve/Reject: only available when status is "pending" */}
+                {isPending && <ApproveLeavePlanRequest id={leavePlanRequest.id} />}
+                {isPending && <RejectLeavePlanRequest id={leavePlanRequest.id} />}
+                {/* Edit/Delete: available for draft and pending */}
                 <EditLeavePlanRequest leavePlanRequest={leavePlanRequest} />
                 <DeleteLeavePlanRequest id={leavePlanRequest.id} />
             </MenuContent>

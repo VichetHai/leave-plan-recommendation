@@ -51,7 +51,7 @@ export const LeaveRequestActionsMenu = ({ leaveRequest, disabled }: LeaveRequest
         mutationFn: async () => {
             const baseUrl = OpenAPI.BASE || ""
             const token = localStorage.getItem("access_token") || ""
-            const res = await fetch(`${baseUrl}/api/v1/leave-requests${leaveRequest.id}/submit`, {
+            const res = await fetch(`${baseUrl}/api/v1/leave-requests/${leaveRequest.id}/submit`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` },
             })
@@ -69,7 +69,7 @@ export const LeaveRequestActionsMenu = ({ leaveRequest, disabled }: LeaveRequest
         mutationFn: async () => {
             const baseUrl = OpenAPI.BASE || ""
             const token = localStorage.getItem("access_token") || ""
-            const res = await fetch(`${baseUrl}/api/v1/leave-requests${leaveRequest.id}/approve`, {
+            const res = await fetch(`${baseUrl}/api/v1/leave-requests/${leaveRequest.id}/approve`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` },
             })
@@ -87,7 +87,7 @@ export const LeaveRequestActionsMenu = ({ leaveRequest, disabled }: LeaveRequest
         mutationFn: async () => {
             const baseUrl = OpenAPI.BASE || ""
             const token = localStorage.getItem("access_token") || ""
-            const res = await fetch(`${baseUrl}/api/v1/leave-requests${leaveRequest.id}/reject`, {
+            const res = await fetch(`${baseUrl}/api/v1/leave-requests/${leaveRequest.id}/reject`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` },
             })

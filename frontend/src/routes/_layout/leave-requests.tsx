@@ -141,7 +141,7 @@ function NameWithPopover({ name, ownerId }: { name: string; ownerId: string }) {
 function ApproverWithPopover({ approvers }: { approvers: ApproverInfo[] }) {
     const [isOpen, setIsOpen] = useState(false)
 
-    if (!approvers || approvers.length === 0) {
+    if (!approvers || !Array.isArray(approvers) || approvers.length === 0) {
         return <Text>-</Text>
     }
 

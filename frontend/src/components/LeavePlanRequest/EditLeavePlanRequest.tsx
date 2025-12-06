@@ -7,11 +7,13 @@ import {
     Text,
     Textarea,
     VStack,
+    IconButton,
+    Flex,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FaExchangeAlt } from "react-icons/fa"
+import { FaExchangeAlt, FaPlus, FaTrash } from "react-icons/fa"
 import type { ApiError } from "@/client/core/ApiError"
 import LeaveTypesService from "@/client/LeaveTypesService"
 import { OpenAPI } from "@/client/core/OpenAPI"
@@ -107,9 +109,10 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
     const [isLoadingRecord, setIsLoadingRecord] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
-    const [leaveDate, setLeaveDate] = useState(
-        leavePlanRequest.details?.[0]?.leave_date || ""
+    const [leaveDates, setLeaveDates] = useState<string[]>(
+        leavePlanRequest.details?.map(d => d.leave_date) || []
     )
+    const [newDate, setNewDate] = useState("")
 
     // Fetch leave types for dropdown
     const { data: leaveTypesData } = useQuery({
@@ -148,12 +151,23 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                 description: freshRecord.description,
                 leave_type_id: freshRecord.leave_type_id,
             })
-            setLeaveDate(freshRecord.details?.[0]?.leave_date || "")
+            setLeaveDates(freshRecord.details?.map(d => d.leave_date) || [])
         } catch (error) {
             console.error("Failed to fetch record:", error)
         } finally {
             setIsLoadingRecord(false)
         }
+    }
+
+    const handleAddDate = () => {
+        if (newDate && !leaveDates.includes(newDate)) {
+            setLeaveDates([...leaveDates, newDate])
+            setNewDate("")
+        }
+    }
+
+    const handleRemoveDate = (dateToRemove: string) => {
+        setLeaveDates(leaveDates.filter(date => date !== dateToRemove))
     }
 
     const mutation = useMutation({
@@ -176,10 +190,8 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
     })
 
     const onSubmit: SubmitHandler<LeavePlanRequestUpdate> = async (data) => {
-        // Convert leave date string to details array
-        const details = leaveDate
-            ? [{ leave_date: leaveDate }]
-            : []
+        // Convert leaveDates array to details format
+        const details = leaveDates.map(date => ({ leave_date: date }))
 
         mutation.mutate({
             ...data,
@@ -251,17 +263,72 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                                 </Field>
 
                                 <Field
-                                    required
-                                    invalid={!leaveDate && isSubmitting}
-                                    errorText={!leaveDate && isSubmitting ? "Leave date is required" : undefined}
-                                    label="Leave Date"
+                                        invalid={leaveDates.length === 0 && isSubmitting}
+                                        errorText={leaveDates.length === 0 && isSubmitting ? "At least one leave date is required" : undefined}
+                                        label="Leave Dates *"
                                 >
-                                    <Input
-                                        value={leaveDate}
-                                        onChange={(e) => setLeaveDate(e.target.value)}
-                                        placeholder="2025-10-25"
-                                        type="date"
-                                    />
+                                        <VStack gap={3} align="stretch">
+                                            {/* Input for adding new date */}
+                                            <Flex gap={2} align="center">
+                                                <Input
+                                                    value={newDate}
+                                                    onChange={(e) => setNewDate(e.target.value)}
+                                                    type="date"
+                                                    placeholder="Select date"
+                                                    flex={1}
+                                                />
+                                                <Button
+                                                    size="md"
+                                                    variant="outline"
+                                                    onClick={handleAddDate}
+                                                    disabled={!newDate}
+                                                >
+                                                    <FaPlus fontSize="16px" /> Add Date
+                                                </Button>
+                                                <Text fontSize="sm" color="gray.600">
+                                                    ({leaveDates.length})
+                                                </Text>
+                                            </Flex>
+
+                                            {/* List of added dates */}
+                                            {leaveDates.length > 0 && (
+                                                <VStack
+                                                    gap={2}
+                                                    align="stretch"
+                                                    maxH="200px"
+                                                    overflowY="auto"
+                                                    pr={1}
+                                                >
+                                                    {leaveDates.map((date, idx) => (
+                                                        <Flex
+                                                            key={idx}
+                                                            align="center"
+                                                            gap={2}
+                                                            p={2}
+                                                            borderWidth="1px"
+                                                            borderRadius="md"
+                                                            bg={{ base: "gray.50", _dark: "gray.700" }}
+                                                        >
+                                                            <Text flex={1}>
+                                                                {new Date(date).toLocaleDateString("en-GB", {
+                                                                    day: "2-digit",
+                                                                    month: "2-digit",
+                                                                    year: "numeric"
+                                                                })}
+                                                            </Text>
+                                                            <IconButton
+                                                                aria-label="Remove date"
+                                                                children={<FaTrash fontSize="16px" />}
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                color="red.500"
+                                                                onClick={() => handleRemoveDate(date)}
+                                                        />
+                                                    </Flex>
+                                                ))}
+                                                </VStack>
+                                            )}
+                                        </VStack>
                                 </Field>
                             </VStack>
                         </DialogBody>
@@ -276,7 +343,12 @@ const EditLeavePlanRequest = ({ leavePlanRequest }: EditLeavePlanRequestProps) =
                                     Cancel
                                 </Button>
                             </DialogActionTrigger>
-                            <Button variant="solid" type="submit" loading={isSubmitting}>
+                                <Button
+                                    variant="solid"
+                                    type="submit"
+                                    disabled={leaveDates.length === 0}
+                                    loading={isSubmitting}
+                                >
                                 Save
                             </Button>
                         </DialogFooter>
