@@ -70,7 +70,10 @@ const LeavePlanRequestsService = {
             body: JSON.stringify(requestBody),
         })
         if (!response.ok) {
-            throw new Error("Failed to create leave plan request")
+            const errorBody = await response.json().catch(() => ({ detail: "Failed to create leave plan request" }))
+            const error = new Error("Failed to create leave plan request") as any
+            error.body = errorBody
+            throw error
         }
         return response.json()
     },
