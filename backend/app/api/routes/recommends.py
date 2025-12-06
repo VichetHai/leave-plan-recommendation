@@ -45,7 +45,7 @@ class RecommendLeavePlanRouter:
         """
         self.year = year
         self.current_user = current_user
-        leave_type_id, leave_entitlement = self.get_leave_type_with_balance()
+        leave_type_id, leave_entitlement = self.get_leave_type_with_balance(session=session)
         data = self.generate_leave_data(session=session)
         _, data = self.train_leave_model(data)
         recommendations = self.recommend_leave_days(data, leave_entitlement=leave_entitlement)
@@ -62,8 +62,7 @@ class RecommendLeavePlanRouter:
     # ---------------------------
 
     def get_leave_type_with_balance(self, session):
-        # TODO:: add where LeaveType.allow_leave_plan == True
-        statement = select(LeaveType).where(LeaveType.is_active == True)
+        statement = select(LeaveType).where((LeaveType.is_active == True) & (LeaveType.is_allow_plan == True))
         leave_type = session.exec(statement).first()
 
         if not leave_type:
