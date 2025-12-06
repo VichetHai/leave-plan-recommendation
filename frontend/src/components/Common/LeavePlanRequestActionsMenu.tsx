@@ -48,6 +48,9 @@ export const LeavePlanRequestActionsMenu = ({
     const status = leavePlanRequest.status?.toLowerCase() || ""
     const isDraft = status === "draft"
     const isPending = status === "pending"
+    const isApproved = status === "approved"
+    const isRejected = status === "rejected"
+    const canDelete = isDraft || isApproved || isRejected
 
     return (
         <MenuRoot>
@@ -62,9 +65,10 @@ export const LeavePlanRequestActionsMenu = ({
                 {/* Approve/Reject: only available when status is "pending" */}
                 {isPending && <ApproveLeavePlanRequest id={leavePlanRequest.id} />}
                 {isPending && <RejectLeavePlanRequest id={leavePlanRequest.id} />}
-                {/* Edit/Delete: available for draft and pending */}
-                <EditLeavePlanRequest leavePlanRequest={leavePlanRequest} />
-                <DeleteLeavePlanRequest id={leavePlanRequest.id} />
+                {/* Edit: only available for draft */}
+                {isDraft && <EditLeavePlanRequest leavePlanRequest={leavePlanRequest} />}
+                {/* Delete: available for draft, approved, or rejected */}
+                {canDelete && <DeleteLeavePlanRequest id={leavePlanRequest.id} />}
             </MenuContent>
         </MenuRoot>
     )
