@@ -204,6 +204,8 @@ def submit(
         raise HTTPException(status_code=403, detail="Not enough permissions.")
 
     approver = approval_service.get_line_approver(current_user)
+    if not approver:
+        raise HTTPException(status_code=422, detail="No approver found.")
 
     row.status = "pending"
     row.approver_id = approver.id
